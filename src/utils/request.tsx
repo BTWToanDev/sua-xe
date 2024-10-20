@@ -8,7 +8,7 @@ const getToken = (): string | null => {
 
 // Tạo một instance axios với các thiết lập mặc định
 const request = axios.create({
-    baseURL: 'https://localhost:7104/api/',
+    baseURL: 'http://26.139.159.129:5000/api/',
     headers: {
         'Authorization': getToken() ? `Bearer ${getToken()}` : ''
     },
