@@ -11,7 +11,7 @@ const HeroSection: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Tự động chuyển đổi slide sau 5 giây
+
   useEffect(() => {
     if (isPaused) return; // Không thay đổi slide khi bị tạm dừng
 
