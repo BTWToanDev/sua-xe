@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
+import * as request from '../utils/request'; // Giả sử đây là nơi bạn định nghĩa các yêu cầu Axios
+import { toast } from 'react-toastify';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -8,13 +10,26 @@ const Login: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic xử lý đăng nhập, ví dụ gửi request đến API để lấy token
-    const tokenFromServer = 'fake-token'; // Thay bằng token thật từ server
 
-    // Lưu token vào AuthContext và localStorage
-    setToken(tokenFromServer);
+    try {
+      // Gửi request đến API để lấy token
+      const response = await request.post('/auth/login', {
+        email: email,
+        password: password,
+      });
 
-    console.log('Đăng nhập với email:', email, 'và mật khẩu:', password);
+      const tokenFromServer = response.data.token; // Lấy token từ phản hồi
+
+      // Lưu token vào AuthContext và localStorage
+      setToken(tokenFromServer);
+
+      toast.success('Đăng nhập thành công!');
+
+      console.log('Đăng nhập với email:', email, 'và mật khẩu:', password);
+    } catch (error: any) {
+      console.error('Đăng nhập thất bại:', error.response?.data || error.message);
+      toast.error('Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.');
+    }
   };
 
   return (

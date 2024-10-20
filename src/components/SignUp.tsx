@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { FaGoogle, FaFacebook } from 'react-icons/fa'; // Thêm icon cho Google và Facebook
+import { FaGoogle, FaFacebook } from 'react-icons/fa';
+import * as request from '../utils/request'; // Thêm import request
+import { toast } from 'react-toastify';
 
 const SignUp: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -17,13 +19,13 @@ const SignUp: React.FC = () => {
     termsAccepted: ''
   });
 
-  // Kiểm tra điều kiện cho Họ và Tên (không có số và ký tự đặc biệt)
+  // Kiểm tra điều kiện cho Họ và Tên
   const validateName = (name: string) => /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴặẹẽẻềếểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ\s]+$/.test(name);
 
-  // Kiểm tra điều kiện cho số điện thoại (chỉ số nguyên, 10-11 chữ số)
+  // Kiểm tra điều kiện cho số điện thoại
   const validatePhoneNumber = (number: string) => /^[0-9]{10,11}$/.test(number);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Kiểm tra điều kiện cho từng trường
@@ -35,20 +37,27 @@ const SignUp: React.FC = () => {
       termsAccepted: termsAccepted ? '' : 'Bạn phải đồng ý với điều khoản sử dụng.'
     };
 
-    // Nếu có lỗi, cập nhật state và dừng lại
     if (newErrors.fullName || newErrors.phoneNumber || newErrors.password || newErrors.confirmPassword || newErrors.termsAccepted) {
       setErrors(newErrors);
       return;
     }
 
-    // Xử lý đăng ký tài khoản khi không có lỗi
-    console.log({
-      fullName,
-      phoneNumber,
-      address,
-      email,
-      password
-    });
+    try {
+      // Gửi yêu cầu đăng ký đến API
+      const response = await request.post('/auth/signup', {
+        fullName,
+        phoneNumber,
+        address,
+        email,
+        password
+      });
+
+      toast.success('Đăng ký thành công!');
+      console.log('Đăng ký thành công với thông tin:', response);
+    } catch (error: any) {
+      console.error('Đăng ký thất bại:', error.response?.data || error.message);
+      toast.error('Đăng ký thất bại! Vui lòng kiểm tra lại thông tin.');
+    }
   };
 
   return (

@@ -7,6 +7,7 @@ import SignUp from './components/SignUp'; // Trang Sign Up
 import Services from './components/Services'; // Trang Services mới
 import Footer from './components/Footer'; // Thêm Footer mới
 import { AuthProvider } from './components/AuthContext'; // Import AuthProvider
+//import { ToastContainer } from "react-toastify";
 
 const App: React.FC = () => {
   return (

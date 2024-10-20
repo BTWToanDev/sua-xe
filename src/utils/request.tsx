@@ -21,12 +21,27 @@ request.interceptors.response.use(
     (error) => {
         if (error.response) {
             const status = error.response.status;
+            const errorMessage = error.response.data?.message || 'Có lỗi xảy ra.';
+
+            // Log error để xử lý khi bị 401 hoặc 403
             if (status === 401 || status === 403) {
                 console.log(status);
                 // window.location.href = '/';
             }
+
+            // Thêm thông báo lỗi từ API
+            return Promise.reject({
+                status: status,
+                message: errorMessage,
+                data: error.response.data,
+            });
         }
-        return Promise.reject(error);
+
+        // Xử lý khi không có response
+        return Promise.reject({
+            status: 500,
+            message: 'Không thể kết nối đến server.',
+        });
     }
 );
 
