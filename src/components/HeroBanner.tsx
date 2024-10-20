@@ -19,7 +19,7 @@ const HeroSection: React.FC = () => {
       setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
     }, 5000);
 
-    return () => clearInterval(slideInterval); // Clear interval khi component unmount
+    return () => clearInterval(slideInterval); 
   }, [isPaused, images.length]);
 
   // Hàm để chuyển slide
