@@ -103,6 +103,14 @@ const Navbar: React.FC = () => {
               >
                 Đăng Xuất
               </button>
+
+              {/* Nút Đăng Nhập Admin */}
+              <Link
+                to="/admin"  // Đường dẫn tới trang admin
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 shadow-md hover:shadow-xl transition duration-300"
+              >
+                Đăng Nhập Admin
+              </Link>
             </>
           ) : (
             <>
@@ -164,7 +172,12 @@ const Navbar: React.FC = () => {
               />
             </li>
             <li>
-              <button className="bg-red-500 text-white px-4 py-2 rounded-md">Đặt Lịch Ngay</button>
+              <Link
+                to="/admin"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                Đăng Nhập Admin
+              </Link>
             </li>
           </ul>
         </div>
