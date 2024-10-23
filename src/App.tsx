@@ -15,6 +15,7 @@ import QuanLyPhuTung from './components/common/admin/QuanLyPhuTung';
 import QuanLyPhuongTien from './components/common/admin/QuanLyPhuongTien';
 import ThongKe from './components/common/admin/ThongKe';
 import QuanLyVanDe from './components/common/admin/QuanLyVanDe';
+import  Kho from './components/common/admin/Kho';
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -34,6 +35,7 @@ const App: React.FC = () => {
             <Route path="phu-tung" element={<QuanLyPhuTung />} />
             <Route path="phuong-tien" element={<QuanLyPhuongTien />} />
             <Route path="Thong-ke" element={<ThongKe />} />
+            <Route path="Kho" element={<Kho />} />
             {/* Thêm các route khác tương tự */}
           </Route>
         </Routes>
