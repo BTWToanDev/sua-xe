@@ -1,32 +1,33 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import request from '/DoAn2/sua-xe/src/utils/request'; // Import request từ request.tsx
 import Table from "/DoAn2/sua-xe/src/components/common/Table"; // Import component Table
 
-// Định nghĩa interface cho dịch vụ
-interface DichVu {
+
+interface Hang {
   id: number;
-  tenDichVu: string;
-  gia: number;
-  isActive: boolean; // Thêm thuộc tính isActive cho dịch vụ
+  tenHang: string;
+  country: string;
+  version: string; // Thêm thuộc tính version
+  isActive: boolean; // Thêm thuộc tính isActive
 }
 
-const QuanLyDichVu = () => {
-  const [dichVus, setDichVus] = useState<DichVu[]>([]); // Định nghĩa kiểu dữ liệu của dichVus là mảng DichVu
+const QuanLyHang = () => {
+  const [Hangs, setHangs] = useState<Hang[]>([]); // Kiểu dữ liệu là mảng các Hang
   const [showPopup, setShowPopup] = useState(false);
-  const [maDichVu, setMaDichVu] = useState(0);
-  const [tenDichVu, setTenDichVu] = useState('');
-  const [gia, setGia] = useState<number | string>(''); // Giá có thể là số hoặc chuỗi, tùy theo trạng thái
-  const [isActive, setIsActive] = useState(false); // Thêm trạng thái isActive
-  const [editingId, setEditingId] = useState<number | null>(null); // ID có thể là số hoặc null
+  const [tenHang, setTenHang] = useState('');
+  const [country, setCountry] = useState(''); // Thêm state cho version
+  const [isActive, setIsActive] = useState(false); // Thêm state cho isActive
+  const [editingId, setEditingId] = useState<string | null>(null); // Kiểu string hoặc null
+  const [maHang, setMaHang] = useState(0);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
   const [keyword, setKeyword] = useState<string>("");
   const [totalItems, setTotalItems] = useState<number>(0);
 
-  // Fetch dữ liệu từ API
-  const fetchDichVus = useCallback(() => {
+  // Fetch dữ liệu từ API khi component mount
+  const fetchHangs = useCallback(() => {
     request
-      .get("Services/pagination", {
+      .get("/Brands/pagination", {
         params: {
           pageIndex,
           pageSize,
@@ -34,7 +35,6 @@ const QuanLyDichVu = () => {
         },
       })
       .then((response) => {
-       
         const data = response.data.datas.map((item:any) => ({
           ...item,
           action: (
@@ -55,62 +55,61 @@ const QuanLyDichVu = () => {
          
           ),
         }));
-        setDichVus(data);
+        setHangs(data);
         setTotalItems(response.data.total);
       })
       .catch((error) => {
-        console.error('Lỗi khi lấy danh sách dịch vụ:', error);
+        console.error('Lỗi khi lấy danh sách hãng:', error);
       });
   }, [pageIndex, pageSize, keyword]);
 
   useEffect(() => {
-    fetchDichVus();
-  }, [fetchDichVus]);
+    fetchHangs();
+  }, [fetchHangs]);
 
   const handleAdd = () => {
-    setMaDichVu(0); // Reset khi thêm mới
-    setTenDichVu('');
-    setGia('');
-    setIsActive(false);
+    setMaHang(0);
+    setTenHang('');
+    setCountry('');
     setEditingId(null);
     setShowPopup(true); // Hiển thị pop-up
   };
 
-  const handleEdit = (service:any) => { // Định nghĩa kiểu cho service
-    setMaDichVu(service.id); // Set giá trị khi sửa
-    setTenDichVu(service.name);
-    setGia(service.price);
-    setEditingId(service.id);
+  const handleEdit = (Hang: any) => {
+    setMaHang(Hang.id);
+    setTenHang(Hang.name);
+    setCountry(Hang.country);
+    setEditingId(Hang.id);
     setShowPopup(true); // Hiển thị pop-up
   };
 
   const handleDelete = async (id: any) => {
     try {
-      await request.delete(`/Services/${id}`);
-      fetchDichVus(); // Cập nhật lại danh sách sau khi xóa
+      await request.delete(`/Brands/${id}`); // API endpoint để xóa
+      fetchHangs(); // Cập nhật lại danh sách sau khi xóa
     } catch (error) {
-      console.error('Lỗi khi xóa dịch vụ:', error);
+      console.error('Lỗi khi xóa hãng:', error);
     }
   };
 
   const handleSave = async () => {
     try {
       const serviceData = {
-        name: tenDichVu,
-        price: Number(gia),
+        name: tenHang,
+        country: country ,
       
       };
       if (editingId) {
         // Update existing service
-        await request.put(`Services/${editingId}`, serviceData);
+        await request.put(`Brands/${editingId}`, serviceData);
       } else {
         // Create a new service
-        await request.post('/Services', serviceData);
+        await request.post('/Brands', serviceData);
       }
-      fetchDichVus(); // Cập nhật danh sách dịch vụ
+     fetchHangs(); // Cập nhật danh sách phương tiện
       setShowPopup(false); // Đóng pop-up sau khi lưu
     } catch (error) {
-      console.error('Lỗi khi lưu dịch vụ:', error);
+      console.error('Lỗi khi lưu hãng:', error);
     }
   };
 
@@ -126,7 +125,7 @@ const QuanLyDichVu = () => {
     setKeyword(newKeyword);
   };
 
-  // Định nghĩa columns cho bảng dịch vụ
+  // Định nghĩa columns cho bảng phương tiện
   const columns = [
     {
       Header: "ID",
@@ -137,8 +136,8 @@ const QuanLyDichVu = () => {
       accessor: "name",
     },
     {
-      Header: "Price",
-      accessor: "price",
+      Header: "Country",
+      accessor: "country",
     },
     {
       Header: "IsActive",
@@ -150,17 +149,18 @@ const QuanLyDichVu = () => {
     {
       Header: "Thao tác",
       accessor: "action",
+     
     },
   ];
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Quản Lý Dịch Vụ</h2>
-      <button onClick={handleAdd} className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4">Thêm Dịch Vụ</button>
+      <h2 className="text-2xl font-bold mb-4">Quản Lý Hãng</h2>
+      <button onClick={handleAdd} className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4">Thêm Hãng</button>
       
       <Table
         columns={columns}
-        data={dichVus}
+        data={Hangs}
         total={totalItems}
         pageIndex={pageIndex}
         pageSize={pageSize}
@@ -173,21 +173,23 @@ const QuanLyDichVu = () => {
       {showPopup && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4">{editingId ? 'Sửa Dịch Vụ' : 'Thêm Dịch Vụ'}</h3>
-           
+            <h3 className="text-xl font-bold mb-4">{editingId ? 'Sửa Hãng' : 'Thêm Hãng'}</h3>
+            {/* Form thêm/sửa phương tiện */}
+        
             <input
               type="text"
-              placeholder="Tên Dịch Vụ"
+              placeholder="Tên Hãng"
               className="border p-2 mb-4 w-full"
-              value={tenDichVu}
-              onChange={(e) => setTenDichVu(e.target.value)}
+              value={tenHang}
+              onChange={(e) => setTenHang(e.target.value)}
             />
+          
             <input
-              type="number"
-              placeholder="Giá"
+              type="text"
+              placeholder="country"
               className="border p-2 mb-4 w-full"
-              value={gia}
-              onChange={(e) => setGia(e.target.value)}
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
             />
             <label className="inline-flex items-center">
               <input
@@ -209,4 +211,4 @@ const QuanLyDichVu = () => {
   );
 };
 
-export default QuanLyDichVu;
+export default QuanLyHang ;

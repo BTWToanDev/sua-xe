@@ -52,6 +52,12 @@ const AdminSidebar: React.FC = () => {
             Quản lý phương tiện
           </Link>
           <Link
+            to="/admin/hang"
+            className="block py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300 w-full text-left"
+          >
+            Quản lý Hãng
+          </Link>
+          <Link
             to="/admin/thong-ke"
             className="block py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300 w-full text-left"
           >
