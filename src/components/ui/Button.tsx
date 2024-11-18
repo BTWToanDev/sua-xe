@@ -13,8 +13,8 @@ const Button: React.FC<ButtonProps> = ({ children, className, primary, type = 'b
       className={clsx(
         'px-5 py-2 focus:outline-none rounded-lg',
         {
-          'bg-green-400 text-white hover:bg-green-300 disabled:bg-slate-300': !primary,
-          'bg-green-600 text-white hover:bg-green-500 disabled:bg-green-300': primary,
+          'bg-gray-300 text-white hover:bg-green-300 disabled:bg-slate-300': !primary,
+          'bg-gray-500 text-white hover:bg-gray-300 disabled:bg-green-300': primary,
         },
         className
       )}

@@ -16,8 +16,14 @@ import QuanLyPhuongTien from './components/common/admin/QuanLyPhuongTien';
 import QuanLyHang from './components/common/admin/QuanLyHang';
 import ThongKe from './components/common/admin/ThongKe';
 import QuanLyVanDe from './components/common/admin/QuanLyVanDe';
-import  Kho from './components/common/admin/Kho';
-import  AdminDashboard from './components/common/admin/AdminDashboard';
+import Kho from './components/common/admin/Kho';
+import AdminDashboard from './components/common/admin/AdminDashboard';
+import SuaTTKH from './components/common/admin/SuaTTKH'; 
+
+import Deirec from './components/common/TaoYeuCau/deirec';
+import Remote from './components/common/TaoYeuCau/remote';
+import Rescue from './components/common/TaoYeuCau/rescue';
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -26,21 +32,28 @@ const App: React.FC = () => {
           <Route path="/" element={<><Navbar /><HeroBanner /><Services /><Footer /></>} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          
+
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="sua-chua" element={<QuanLyYeuCau />} />
+            <Route path="sua-chua/sua/:id" element={<SuaTTKH />} /> {/* Route thêm mới */}
             <Route path="tai-khoan" element={<QuanLyTaiKhoan />} />
             <Route path="dich-vu" element={<QuanLyDichVu />} />
             <Route path="van-de" element={<QuanLyVanDe />} />
             <Route path="phu-tung" element={<QuanLyPhuTung />} />
             <Route path="phuong-tien" element={<QuanLyPhuongTien />} />
             <Route path="hang" element={<QuanLyHang />} />
+           
             <Route path="Thong-ke" element={<ThongKe />} />
-            <Route path="Kho" element={<Kho />} />
-            {/* Thêm các route khác tương tự */}
+            <Route path="kho/:partId" element={<Kho />} />
+            <Route path="deirec" element={<Deirec />} />
+            <Route path="remote" element={<Remote />} />
+            <Route path="rescue" element={<Rescue />} />
           </Route>
+        
+          
+         
         </Routes>
       </Router>
     </AuthProvider>

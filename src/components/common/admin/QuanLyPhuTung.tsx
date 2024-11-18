@@ -6,11 +6,17 @@ import { useNavigate } from "react-router-dom";
 interface PhuTung {
   id: number;
   name: string;
+  tenHang:string;
   createdDate: string;
   updateDate: string;
   warrantyPeriod: number;
   price: number;
   isActive: boolean;
+}
+
+interface Brand {
+  id: number;
+  name: string;
 }
 
 const QuanLyPhuTung = () => {
@@ -25,6 +31,19 @@ const QuanLyPhuTung = () => {
   const [pageSize, setPageSize] = useState<number>(5);
   const [keyword, setKeyword] = useState<string>("");
   const [totalItems, setTotalItems] = useState<number>(0);
+  const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [tenHang, setTenHang] = useState('');  // Thêm state cho tenHang
+
+  const [showNhapHangPopup, setShowNhapHangPopup] = useState(false);
+  const [batchNumber, setBatchNumber] = useState('');
+  const [supplier, setSupplier] = useState('');
+  const [tax, setTax] = useState<number | null>(null);
+  const [quantityReceived, setQuantityReceived] = useState<number | null>(null);
+  const [entryPrice, setEntryPrice] = useState<number | null>(null);
+  const [productionDate, setProductionDate] = useState('');
+  const [expirationDate, setExpirationDate] = useState('');
+  const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
 
   const navigate = useNavigate();
 
@@ -55,6 +74,12 @@ const QuanLyPhuTung = () => {
                 Sửa
               </button>
               <button
+                onClick={() => handleNhapHang(item.id)}
+                className="bg-green-500 text-white px-2 py-1 rounded-lg"
+              >
+                Nhập Hàng
+              </button>
+              <button
                 onClick={() => handleDelete(item.id)}
                 className="bg-red-500 text-white px-2 py-1 rounded-lg"
               >
@@ -74,15 +99,25 @@ const QuanLyPhuTung = () => {
       });
   }, [pageIndex, pageSize, keyword, navigate]);
 
+  const fetchBrands = useCallback(() => {
+    request.get("/Brands/dropdown")
+      .then((response) => setBrands(response.data))
+      .catch((error) => {
+        console.error('Lỗi khi lấy danh sách hãng:', error);
+      });
+  }, []);
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchBrands();
+  }, [fetchData, fetchBrands]);
 
   const handleAdd = () => {
     setName('');
     setWarrantyPeriod(null);
     setPrice(null);
-    setIsActive(false);
+    setTenHang('');  // Reset tenHang
+    setSelectedBrandId(null);
     setEditingId(null);
     setShowPopup(true);
   };
@@ -91,13 +126,27 @@ const QuanLyPhuTung = () => {
     setName(phuTung.name);
     setWarrantyPeriod(phuTung.warrantyPeriod);
     setPrice(phuTung.price);
+    setTenHang(phuTung.tenHang);  // Thiết lập tenHang khi chỉnh sửa
+    setSelectedBrandId(phuTung.id);
     setIsActive(phuTung.isActive);
     setEditingId(phuTung.id);
     setShowPopup(true);
   };
 
-  const handleViewKho = (id: number) => {
-    navigate(`/PartInventories/available/${id}`);
+  const handleViewKho = (partId: number) => {
+    navigate(`/admin/kho/${partId}`);
+  };
+
+  const handleNhapHang = (partId: number) => {
+    setSelectedPartId(partId);
+    setBatchNumber('');
+    setSupplier('');
+    setTax(null);
+    setQuantityReceived(null);
+    setEntryPrice(null);
+    setProductionDate('');
+    setExpirationDate('');
+    setShowNhapHangPopup(true);
   };
 
   const handleDelete = async (id: number) => {
@@ -109,19 +158,52 @@ const QuanLyPhuTung = () => {
     }
   };
 
+  const handleSaveNhapHang = async () => {
+    try {
+      await request.post('/PartInventories', {
+        partId: selectedPartId,
+        batchNumber,
+        supplier,
+        tax,
+        quantityReceived,
+        entryPrice,
+        productionDate,
+        expirationDate,
+      });
+      fetchData();
+      setShowNhapHangPopup(false);
+    } catch (error) {
+      console.error('Lỗi khi lưu nhập hàng:', error);
+    }
+  };
+
   const handleSave = async () => {
     try {
-      if (editingId) {
-        await request.put(`/Parts/${editingId}`, { name, price });
-      } else {
-        await request.post('/Parts', { name, price });
+      if (!selectedBrandId) {
+        console.error("Vui lòng chọn một hãng hợp lệ");
+        return;
       }
+  
+      const payload = {
+        name,
+        price,
+        warrantyPeriod,
+        brandId: selectedBrandId,  // Đảm bảo gửi đúng brandId
+      };
+  
+      if (editingId) {
+        await request.put(`/Parts/${editingId}`, payload);
+      } else {
+        await request.post('/Parts', payload);
+      }
+      
       fetchData();
       setShowPopup(false);
     } catch (error) {
       console.error('Lỗi khi lưu phụ tùng:', error);
     }
   };
+  
 
   const handlePageChange = (newPageIndex: number) => {
     setPageIndex(newPageIndex);
@@ -160,38 +242,43 @@ const QuanLyPhuTung = () => {
         onKeywordChange={handleKeywordChange}
       />
 
+      {showNhapHangPopup && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-xl font-bold mb-4">Nhập Hàng</h3>
+            <input type="text" placeholder="Số Lô" className="border p-2 mb-4 w-full" value={batchNumber} onChange={(e) => setBatchNumber(e.target.value)} />
+            <input type="text" placeholder="Nhà Cung Cấp" className="border p-2 mb-4 w-full" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
+            <input type="number" placeholder="Thuế" className="border p-2 mb-4 w-full" value={tax || ''} onChange={(e) => setTax(Number(e.target.value))} />
+            <input type="number" placeholder="Số Lượng" className="border p-2 mb-4 w-full" value={quantityReceived || ''} onChange={(e) => setQuantityReceived(Number(e.target.value))} />
+            <input type="number" placeholder="Giá Nhập" className="border p-2 mb-4 w-full" value={entryPrice || ''} onChange={(e) => setEntryPrice(Number(e.target.value))} />
+            <input type="date" placeholder="Ngày Sản Xuất" className="border p-2 mb-4 w-full" value={productionDate} onChange={(e) => setProductionDate(e.target.value)} />
+            <input type="date" placeholder="Ngày Hết Hạn" className="border p-2 mb-4 w-full" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
+            <div className="flex justify-end">
+              <button onClick={() => setShowNhapHangPopup(false)} className="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2">Hủy</button>
+              <button onClick={handleSaveNhapHang} className="bg-green-500 text-white px-4 py-2 rounded-lg">Lưu</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showPopup && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-xl font-bold mb-4">{editingId ? 'Sửa Phụ Tùng' : 'Thêm Phụ Tùng'}</h3>
-            <input
-              type="text"
-              placeholder="Tên Phụ Tùng"
-              className="border p-2 mb-4 w-full"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              type="number"
-              placeholder="Giá"
-              className="border p-2 mb-4 w-full"
-              value={price || ''}
-              onChange={(e) => setPrice(Number(e.target.value))}
-            />
-            <label className="inline-flex items-center mb-4">
-              <input
-                type="checkbox"
-                className="form-checkbox"
-                checked={isActive}
-                onChange={() => setIsActive(!isActive)}
-              />
-              <span className="ml-2">Hoạt động</span>
-            </label>
+            <input type="text" placeholder="Tên Phụ Tùng" className="border p-2 mb-4 w-full" value={name} onChange={(e) => setName(e.target.value)} />
+            <input type="number" placeholder="Giá" className="border p-2 mb-4 w-full" value={price || ''} onChange={(e) => setPrice(Number(e.target.value))} />
+            <input type="number" placeholder="Thời Hạn Bảo Hành (Tháng)" className="border p-2 mb-4 w-full" value={warrantyPeriod || ''} onChange={(e) => setWarrantyPeriod(Number(e.target.value))} />
+
+            <select className="border p-2 mb-4 w-full" value={selectedBrandId || ''} onChange={(e) => setSelectedBrandId(Number(e.target.value))}>
+              <option value="">Chọn Hãng</option>
+              {brands.map((brand) => (
+                <option key={brand.id} value={brand.id}>{brand.name}</option>
+              ))}
+            </select>
+           
             <div className="flex justify-end">
               <button onClick={() => setShowPopup(false)} className="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2">Hủy</button>
-              <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded-lg">
-                {editingId ? 'Lưu' : 'Thêm'}
-              </button>
+              <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded-lg">{editingId ? 'Lưu' : 'Thêm'}</button>
             </div>
           </div>
         </div>

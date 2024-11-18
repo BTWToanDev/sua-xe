@@ -1,265 +1,250 @@
-import React, { useEffect, useState } from 'react';
-import request from '/DoAn2/sua-xe/src/utils/request'; // Import request từ request.tsx
+import { useEffect, useState, useCallback } from "react";
+import request from "/DoAn2/sua-xe/src/utils/request";
+import Table from "/DoAn2/sua-xe/src/components/common/Table";
+import { useNavigate } from "react-router-dom";
 
 interface TaiKhoan {
   id: number;
-  username: string;
-  email: string;
-  mobile: string;
-  phone: string;
-  fullname: string;
-  role: string;
+  mobilePhone: string;
+  fullName: string;
+  address: string;
+  issueDescription: string;
+  videos: string;
+  images: string;
+  problems: string;
+  services: string;
 }
 
 const QuanLyTaiKhoan = () => {
   const [taiKhoans, setTaiKhoans] = useState<TaiKhoan[]>([]);
   const [showPopup, setShowPopup] = useState(false);
-  const [formState, setFormState] = useState({
-    username: '',
-    email: '',
-    mobile: '',
-    phone: '',
-    fullname: '',
-    role: ''
-  });
+  const [mobilePhone, setMobilePhone] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [address, setAddress] = useState("");
+  const [issueDescription, setIssueDescription] = useState("");
+  const [videos, setVideos] = useState<File | null>(null);
+  const [images, setImages] = useState<File | null>(null);
+  const [problems, setProblems] = useState("");
+  const [services, setServices] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(5);
+  const [keyword, setKeyword] = useState<string>("");
+  const [totalItems, setTotalItems] = useState<number>(0);
+
+  const navigate = useNavigate();
+
+  const fetchData = useCallback(() => {
+    request
+      .get(`/ServiceRequests/pagination`, {
+        params: { pageIndex, pageSize, keyword },
+      })
+      .then((response) => {
+        const data = response.data.datas.map((item: any) => ({
+          ...item,
+          videos: item.videos || "",
+          images: item.images || "",
+          action: (
+            <div className="flex">
+              <button
+                onClick={() => handleEdit(item)}
+                className="bg-yellow-500 text-white px-2 py-1 rounded-lg mr-2"
+              >
+                Sửa
+              </button>
+              <button
+                onClick={() => handleDelete(item.id)}
+                className="bg-red-500 text-white px-2 py-1 rounded-lg"
+              >
+                Xóa
+              </button>
+            </div>
+          ),
+        }));
+        setTaiKhoans(data);
+        setTotalItems(response.data.total);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 403) {
+          navigate("/");
+        }
+        console.error("Lỗi khi lấy danh sách tài khoản:", error);
+      });
+  }, [pageIndex, pageSize, keyword, editingId, navigate]);
 
   useEffect(() => {
-    fetchTaiKhoans();
-  }, []);
-
-  const fetchTaiKhoans = async () => {
-    try {
-      const response = await request.get('/tai-khoan'); // Giả sử API endpoint là /tai-khoan
-      setTaiKhoans(response.data);
-    } catch (error) {
-      console.error('Lỗi khi lấy danh sách tài khoản:', error);
-    }
-  };
+    fetchData();
+  }, [fetchData]);
 
   const handleAdd = () => {
-    setFormState({
-      username: '',
-      email: '',
-      mobile: '',
-      phone: '',
-      fullname: '',
-      role: ''
-    });
+    setMobilePhone("");
+    setFullName("");
+    setAddress("");
+    setIssueDescription("");
+    setVideos(null);
+    setImages(null);
+    setProblems("");
+    setServices("");
     setEditingId(null);
     setShowPopup(true);
   };
 
-  const handleEdit = (account: TaiKhoan) => {
-    setFormState({
-      username: account.username,
-      email: account.email,
-      mobile: account.mobile,
-      phone: account.phone,
-      fullname: account.fullname,
-      role: account.role
-    });
-    setEditingId(account.id);
+  const handleEdit = (taiKhoan: TaiKhoan) => {
+    setMobilePhone(taiKhoan.mobilePhone);
+    setFullName(taiKhoan.fullName);
+    setAddress(taiKhoan.address);
+    setIssueDescription(taiKhoan.issueDescription);
+    setProblems(taiKhoan.problems);
+    setServices(taiKhoan.services);
+    setEditingId(taiKhoan.id);
     setShowPopup(true);
   };
 
   const handleDelete = async (id: number) => {
     try {
-      await request.delete(`/tai-khoan/${id}`);
-      fetchTaiKhoans(); // Cập nhật danh sách sau khi xóa
+      await request.delete(`/ServiceRequests/${id}`);
+      fetchData();
     } catch (error) {
-      console.error('Lỗi khi xóa tài khoản:', error);
+      console.error("Lỗi khi xóa tài khoản:", error);
     }
   };
 
   const handleSave = async () => {
     try {
-      const accountData = { ...formState };
+      const formData = new FormData();
+      formData.append("mobilePhone", mobilePhone);
+      formData.append("fullName", fullName);
+      formData.append("address", address);
+      formData.append("issueDescription", issueDescription);
+      formData.append("problems", problems);
+      formData.append("services", services);
+      if (videos) formData.append("videos", videos);
+      if (images) formData.append("images", images);
 
       if (editingId) {
-        await request.put(`/tai-khoan/${editingId}`, accountData); // Cập nhật tài khoản
+        await request.put(`/ServiceRequests/${editingId}`, formData);
       } else {
-        await request.post('/tai-khoan', accountData); // Thêm tài khoản mới
+        await request.post("/ServiceRequests", formData);
       }
 
-      fetchTaiKhoans(); // Cập nhật danh sách tài khoản
-      setShowPopup(false); // Đóng popup
+      fetchData();
+      setShowPopup(false);
     } catch (error) {
-      console.error('Lỗi khi lưu tài khoản:', error);
+      console.error("Lỗi khi lưu tài khoản:", error);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormState({
-      ...formState,
-      [e.target.name]: e.target.value
-    });
-  };
+  const handlePageChange = (newPageIndex: number) => setPageIndex(newPageIndex);
+  const handlePageSizeChange = (newSize: number) => setPageSize(newSize);
+  const handleKeywordChange = (newKeyword: string) => setKeyword(newKeyword);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const filteredTaiKhoans = taiKhoans.filter(
-    (tk) =>
-      tk.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tk.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tk.fullname.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setItemsPerPage(Number(e.target.value));
-  };
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTaiKhoans = filteredTaiKhoans.slice(startIndex, startIndex + itemsPerPage);
+  const columns = [
+    { Header: "Mobile Phone", accessor: "mobilePhone" },
+    { Header: "Full Name", accessor: "fullName" },
+    { Header: "Address", accessor: "address" },
+    { Header: "Issue Description", accessor: "issueDescription" },
+    { Header: "Videos", accessor: "videos" },
+    { Header: "Images", accessor: "images" },
+    { Header: "Problems", accessor: "problems" },
+    { Header: "Services", accessor: "services" },
+    { Header: "Thao tác", accessor: "action" },
+  ];
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">Quản Lý Tài Khoản</h2>
-      <button onClick={handleAdd} className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4">
+      <button
+        onClick={handleAdd}
+        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+      >
         Thêm Tài Khoản
       </button>
 
-      <div className="flex items-center mb-4">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="border p-2 w-full"
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        <button className="bg-green-500 text-white px-4 py-2 ml-2">Search</button>
-      </div>
-
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="border px-4 py-2">Username</th>
-            <th className="border px-4 py-2">Email</th>
-            <th className="border px-4 py-2">Mobile</th>
-            <th className="border px-4 py-2">Phone</th>
-            <th className="border px-4 py-2">Fullname</th>
-            <th className="border px-4 py-2">Role</th>
-            <th className="border px-4 py-2">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedTaiKhoans.map((tk) => (
-            <tr key={tk.id}>
-              <td className="border px-4 py-2">{tk.username}</td>
-              <td className="border px-4 py-2">{tk.email}</td>
-              <td className="border px-4 py-2">{tk.mobile}</td>
-              <td className="border px-4 py-2">{tk.phone}</td>
-              <td className="border px-4 py-2">{tk.fullname}</td>
-              <td className="border px-4 py-2">{tk.role}</td>
-              <td className="border px-4 py-2">
-                <button onClick={() => handleEdit(tk)} className="bg-yellow-500 text-white px-2 py-1 rounded-lg mr-2">
-                  Sửa
-                </button>
-                <button onClick={() => handleDelete(tk.id)} className="bg-red-500 text-white px-2 py-1 rounded-lg">
-                  Xóa
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="flex items-center justify-between mt-4">
-        <div>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-l"
-          >
-            &lt;
-          </button>
-          <span className="px-4 py-2">Page {currentPage} of {Math.ceil(filteredTaiKhoans.length / itemsPerPage)}</span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === Math.ceil(filteredTaiKhoans.length / itemsPerPage)}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-r"
-          >
-            &gt;
-          </button>
-        </div>
-        <div>
-          <label className="mr-2">Show</label>
-          <select value={itemsPerPage} onChange={handleItemsPerPageChange} className="border p-2">
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-          </select>
-        </div>
-      </div>
+      <Table
+        columns={columns}
+        data={taiKhoans}
+        total={totalItems}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        keyword={keyword}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        onKeywordChange={handleKeywordChange}
+      />
 
       {showPopup && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4">{editingId ? 'Sửa Tài Khoản' : 'Thêm Tài Khoản'}</h3>
+            <h3 className="text-xl font-bold mb-4">
+              {editingId ? "Sửa Tài Khoản" : "Thêm Tài Khoản"}
+            </h3>
             <input
               type="text"
-              name="username"
-              placeholder="Username"
+              placeholder="Mobile Phone"
               className="border p-2 mb-4 w-full"
-              value={formState.username}
-              onChange={handleChange}
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              className="border p-2 mb-4 w-full"
-              value={formState.email}
-              onChange={handleChange}
+              value={mobilePhone}
+              onChange={(e) => setMobilePhone(e.target.value)}
             />
             <input
               type="text"
-              name="mobile"
-              placeholder="Mobile"
+              placeholder="Full Name"
               className="border p-2 mb-4 w-full"
-              value={formState.mobile}
-              onChange={handleChange}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
             />
             <input
               type="text"
-              name="phone"
-              placeholder="Phone"
+              placeholder="Address"
               className="border p-2 mb-4 w-full"
-              value={formState.phone}
-              onChange={handleChange}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+            <textarea
+              placeholder="Issue Description"
+              className="border p-2 mb-4 w-full"
+              value={issueDescription}
+              onChange={(e) => setIssueDescription(e.target.value)}
+            />
+            <input
+              type="file"
+              accept="video/*"
+              className="border p-2 mb-4 w-full"
+              onChange={(e) => setVideos(e.target.files?.[0] || null)}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              className="border p-2 mb-4 w-full"
+              onChange={(e) => setImages(e.target.files?.[0] || null)}
             />
             <input
               type="text"
-              name="fullname"
-              placeholder="Fullname"
+              placeholder="Problems"
               className="border p-2 mb-4 w-full"
-              value={formState.fullname}
-              onChange={handleChange}
+              value={problems}
+              onChange={(e) => setProblems(e.target.value)}
             />
             <input
               type="text"
-              name="role"
-              placeholder="Role"
+              placeholder="Services"
               className="border p-2 mb-4 w-full"
-              value={formState.role}
-              onChange={handleChange}
+              value={services}
+              onChange={(e) => setServices(e.target.value)}
             />
-
-            <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded-lg mr-2">
-              Lưu
-            </button>
-            <button onClick={() => setShowPopup(false)} className="bg-gray-500 text-white px-4 py-2 rounded-lg">
-              Hủy
-            </button>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSave}
+                className="bg-green-500 text-white px-4 py-2 rounded-lg"
+              >
+                {editingId ? "Lưu" : "Thêm"}
+              </button>
+            </div>
           </div>
         </div>
       )}

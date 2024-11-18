@@ -183,7 +183,7 @@ const QuanLyPhuongTien = () => {
     },
     {
       Header: "Tên Hãng",
-      accessor: "brand",
+      accessor: "brandName",
     },
     {
       Header: "Thao tác",
