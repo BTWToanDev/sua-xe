@@ -45,9 +45,15 @@ const QuanLyYeuCau = () => {
               </button>
               <button
                 onClick={() => handleDelete(item.id)}
-                className="bg-red-500 text-white px-2 py-1 rounded-lg"
+                className="bg-red-500 text-white px-2 py-1 rounded-lg mr-2"
               >
                 Xóa
+              </button>
+              <button
+                onClick={() => handleDetail(item.id)}
+                className="bg-blue-500 text-white px-2 py-1 rounded-lg"
+              >
+                Chi Tiết
               </button>
             </div>
           ),
@@ -68,7 +74,11 @@ const QuanLyYeuCau = () => {
   }, [fetchData]);
 
   const handleEdit = (request: Request) => {
-    navigate(`/ServiceRequests/${request.id}`);
+    navigate(`/admin/sua-chua/sua/${request.id}`);
+  };
+
+  const handleDetail = (id: number) => {
+    navigate(`/admin/sua-chua/chi-tiet-yeu-cau/${id}`);
   };
 
   const handleDelete = async (id: number) => {
@@ -88,10 +98,12 @@ const QuanLyYeuCau = () => {
     { Header: "ID", accessor: "id" },
     { Header: "Mobile Phone", accessor: "mobilePhone" },
     { Header: "Full Name", accessor: "fullName" },
+    { Header: "Email", accessor: "email" },
     { Header: "Address", accessor: "address" },
     { Header: "Issue Description", accessor: "issueDescription" },
     { Header: "Total Price", accessor: "totalPrice" },
-    { Header: "Type", accessor: "type" },
+    { Header: "Type", accessor: "serviceType" },
+    { Header: "Status", accessor: "status" },
     {
       Header: "Thao tác",
       accessor: "action",

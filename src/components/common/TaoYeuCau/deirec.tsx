@@ -123,7 +123,7 @@ const Deirec = () => {
     });
 
     console.log("Kết quả thành công:", response.data);
-    navigate("/sua-chua");
+    navigate("/");
   } catch (error) {
     console.error("Lỗi khi gửi yêu cầu:", error);
   }

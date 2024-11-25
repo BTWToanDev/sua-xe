@@ -35,7 +35,7 @@ const SuaTTKH = () => {
 
   const handleSave = async () => {
     try {
-      await request.put(`/ServiceRequests/${id}`, {
+      await request.patch(`/ServiceRequests/${id}`, {
         mobilePhone,
         fullName,
         email,
@@ -43,10 +43,15 @@ const SuaTTKH = () => {
         issueDescription,
       });
       alert("Cập nhật thành công!");
-      navigate("/QuanLyYeuCau");
+      navigate("/admin/sua-chua"); // Quay lại trang Quản Lý Yêu Cầu
     } catch (error) {
       console.error("Lỗi khi cập nhật yêu cầu:", error);
+      alert("Có lỗi xảy ra khi cập nhật.");
     }
+  };
+
+  const handleBack = () => {
+    navigate("/admin/sua-chua"); // Quay lại trang Quản Lý Yêu Cầu
   };
 
   return (
@@ -98,9 +103,15 @@ const SuaTTKH = () => {
       </div>
       <button
         onClick={handleSave}
-        className="bg-green-500 text-white px-4 py-2 rounded-lg"
+        className="bg-green-500 text-white px-4 py-2 rounded-lg mr-2"
       >
         Lưu
+      </button>
+      <button
+        onClick={handleBack}
+        className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+      >
+        Trở Về
       </button>
     </div>
   );

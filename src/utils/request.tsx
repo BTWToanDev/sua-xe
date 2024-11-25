@@ -1,18 +1,22 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { getToken as getTokenFromLocalStorage } from "/DoAn2/sua-xe/src/constants";
-
+import {getTokenWithExpiry} from '../constants/localStorage'
 // Hàm lấy token từ localStorage
 const getToken = (): string | null => {
-    return getTokenFromLocalStorage();
+    console.log(getTokenWithExpiry());
+    return  getTokenWithExpiry();
+    
 };
 
 // Tạo một instance axios với các thiết lập mặc định
 const request = axios.create({
     baseURL: 'http://26.139.159.129:5000/api/',
     headers: {
-        'Authorization': getToken() ? `Bearer ${getToken()}` : ''
+        
+        'Authorization':  getTokenWithExpiry() ? `Bearer ${ getTokenWithExpiry()}` : ''
     },
     withCredentials: true, 
+    
 });
 
 // Interceptor để xử lý phản hồi và lỗi

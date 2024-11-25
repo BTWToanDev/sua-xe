@@ -1,34 +1,28 @@
-import React, { useState } from 'react';
-import { useAuth } from './AuthContext';
-import * as request from '../utils/request'; // Giả sử đây là nơi bạn định nghĩa các yêu cầu Axios
-import { toast } from 'react-toastify';
+import React, { useState } from "react";
+import { useAuth } from "./AuthContext";
+import * as request from "../utils/request";
+import { toast } from "react-toastify";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { setToken } = useAuth(); // Lấy hàm setToken từ AuthContext
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { setToken } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      // Gửi request đến API để lấy token
-      const response = await request.post('/auth/login', {
-        email: email,
+      const response = await request.post("/auth/login", {
+        userName: email,
         password: password,
       });
 
-      const tokenFromServer = response.data.token; // Lấy token từ phản hồi
+      const { token, user } = response;
 
-      // Lưu token vào AuthContext và localStorage
-      setToken(tokenFromServer);
-
-      toast.success('Đăng nhập thành công!');
-
-      console.log('Đăng nhập với email:', email, 'và mật khẩu:', password);
+      setToken(token, { username: user.username, email: user.email });
+      toast.success("Đăng nhập thành công!");
     } catch (error: any) {
-      console.error('Đăng nhập thất bại:', error.response?.data || error.message);
-      toast.error('Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.');
+      console.error("Đăng nhập thất bại:", error.response?.data || error.message);
+      toast.error("Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.");
     }
   };
 

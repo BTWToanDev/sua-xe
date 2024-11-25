@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import request from "/DoAn2/sua-xe/src/utils/request";
 import { useNavigate } from "react-router-dom";
 
-const Remote = () => {
+const TaoDon = () => {
   const [mobilePhone, setMobilePhone] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
   const [address, setAddress] = useState<string>("");
@@ -123,7 +123,7 @@ const Remote = () => {
     });
 
     console.log("Kết quả thành công:", response.data);
-    navigate("/sua-chua");
+    navigate("/");
   } catch (error) {
     console.error("Lỗi khi gửi yêu cầu:", error);
   }
@@ -289,4 +289,4 @@ const Remote = () => {
   );
 };
 
-export default Remote;
+export default TaoDon;

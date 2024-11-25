@@ -1,4 +1,10 @@
 // Hàm lưu trữ một mục với thời gian hết hạn
+
+interface TokenData {
+    value:string;
+    expiry: number;
+}
+
 export const setItemWithExpiry = (key: string, value: any, ttl: number): void => {
     const now = new Date();
   
@@ -28,9 +34,10 @@ export const getTokenWithExpiry = (): string | null => {
         return null;
     }
 
-    const item = JSON.parse(itemStr) as { value: string; expiry: number };
+    // Ép kiểu itemStr thành JSON với kiểu đã định nghĩa
+    const item: TokenData = JSON.parse(itemStr) as TokenData;
     const now = new Date();
-
+   
     if (now.getTime() > item.expiry) {
         localStorage.removeItem('token');
         return null;

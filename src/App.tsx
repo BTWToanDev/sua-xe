@@ -5,6 +5,8 @@ import HeroBanner from './components/HeroBanner';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import Services from './components/Services';
+import Brand from './components/Brand';
+import Part from './components/Part';
 import Footer from './components/Footer';
 import { AuthProvider } from './components/AuthContext';
 import AdminLayout from './components/common/admin/AdminLayout';
@@ -19,17 +21,25 @@ import QuanLyVanDe from './components/common/admin/QuanLyVanDe';
 import Kho from './components/common/admin/Kho';
 import AdminDashboard from './components/common/admin/AdminDashboard';
 import SuaTTKH from './components/common/admin/SuaTTKH'; 
-
+import ChiTietYeuCau from './components/common/admin/ChiTietYeuCau';
+import TaoDon from './components/TaoDon';
 import Deirec from './components/common/TaoYeuCau/deirec';
 import Remote from './components/common/TaoYeuCau/remote';
 import Rescue from './components/common/TaoYeuCau/rescue';
+import ChiTietTraCuu from "./components/ChiTietTraCuu";
+import TraCuu from './components/TraCuu';
+import ThongTinTaiKhoan from './components/ThongTinTaiKhoan';
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<><Navbar /><HeroBanner /><Services /><Footer /></>} />
+          <Route path="/" element={<><Navbar /><HeroBanner /><Services /> <Brand /> <Part /> <Footer /></>} />
+          <Route path="/tra-cuu" element={<TraCuu />} />
+          <Route path="/tao-don" element={<TaoDon />} /> 
+          <Route path="/chi-tiet-tra-cuu" element={<ChiTietTraCuu />} />
+          <Route path="/ThongTinTaiKhoan" element={<ThongTinTaiKhoan />} /> 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
 
@@ -37,7 +47,8 @@ const App: React.FC = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="sua-chua" element={<QuanLyYeuCau />} />
-            <Route path="sua-chua/sua/:id" element={<SuaTTKH />} /> {/* Route thêm mới */}
+            <Route path="sua-chua/sua/:id" element={<SuaTTKH />} /> 
+            <Route path="sua-chua/chi-tiet-yeu-cau/:id" element={<ChiTietYeuCau />} /> 
             <Route path="tai-khoan" element={<QuanLyTaiKhoan />} />
             <Route path="dich-vu" element={<QuanLyDichVu />} />
             <Route path="van-de" element={<QuanLyVanDe />} />
