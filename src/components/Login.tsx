@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useAuth } from "./AuthContext";
 import * as request from "../utils/request";
 import { toast } from "react-toastify";
-
+import {setTokenWithExpiry} from "../constants/localStorage"
+import { Navigate, useNavigate } from "react-router-dom";
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { setToken } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,11 +15,13 @@ const Login: React.FC = () => {
         userName: email,
         password: password,
       });
+      
+     
 
-      const { token, user } = response;
-
-      setToken(token, { username: user.username, email: user.email });
-      toast.success("Đăng nhập thành công!");
+      setTokenWithExpiry(response.token, response.expire);
+      console.log("Đăng nhập thành công");
+      navigate("/");
+      window.location.reload();
     } catch (error: any) {
       console.error("Đăng nhập thất bại:", error.response?.data || error.message);
       toast.error("Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.");
@@ -37,7 +39,7 @@ const Login: React.FC = () => {
             </label>
             <input
               id="email"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full border border-gray-300 p-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"

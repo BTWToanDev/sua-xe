@@ -29,20 +29,27 @@ import Rescue from './components/common/TaoYeuCau/rescue';
 import ChiTietTraCuu from "./components/ChiTietTraCuu";
 import TraCuu from './components/TraCuu';
 import ThongTinTaiKhoan from './components/ThongTinTaiKhoan';
-
+import ThanhToanThanhCong from './components/ThanhToanThanhCong';
+import QuanLyTaiKhoanKhachHang from './components/common/admin/QuanLyTaiKhoanKhachHang';
+import { ToastContainer } from 'react-toastify';
 const App: React.FC = () => {
   return (
     <AuthProvider>
+      
       <Router>
         <Routes>
+          
           <Route path="/" element={<><Navbar /><HeroBanner /><Services /> <Brand /> <Part /> <Footer /></>} />
           <Route path="/tra-cuu" element={<TraCuu />} />
           <Route path="/tao-don" element={<TaoDon />} /> 
           <Route path="/chi-tiet-tra-cuu" element={<ChiTietTraCuu />} />
-          <Route path="/ThongTinTaiKhoan" element={<ThongTinTaiKhoan />} /> 
+          <Route path="/ThanhToanThanhCong" element={<ThanhToanThanhCong />} />
+          <Route path="/ThongTinTaiKhoan/:mobilePhone" element={<ThongTinTaiKhoan />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-
+          {/* <Route path="/ChiTietPhuTung" element={<PartDetails />} />
+          <Route path="/ChiTietDichVu" element={<ServiceDetails />} />
+          <Route path="/ChiTietThuongHieu" element={<BrandDetails />} /> */}
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
@@ -50,6 +57,7 @@ const App: React.FC = () => {
             <Route path="sua-chua/sua/:id" element={<SuaTTKH />} /> 
             <Route path="sua-chua/chi-tiet-yeu-cau/:id" element={<ChiTietYeuCau />} /> 
             <Route path="tai-khoan" element={<QuanLyTaiKhoan />} />
+            <Route path="tai-khoan-khach-hang" element={<QuanLyTaiKhoanKhachHang />} />
             <Route path="dich-vu" element={<QuanLyDichVu />} />
             <Route path="van-de" element={<QuanLyVanDe />} />
             <Route path="phu-tung" element={<QuanLyPhuTung />} />
@@ -71,4 +79,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default App; 

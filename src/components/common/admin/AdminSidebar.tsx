@@ -25,7 +25,13 @@ const AdminSidebar: React.FC = () => {
             to="/admin/tai-khoan"
             className="block py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300 w-full text-left"
           >
-            Quản lý tài khoản
+            Quản lý tài khoản Admin
+          </Link>
+          <Link
+            to="/admin/tai-khoan-khach-hang"
+            className="block py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300 w-full text-left"
+          >
+            Quản lý tài khoản Khách Hàng
           </Link>
           <Link
             to="/admin/dich-vu"

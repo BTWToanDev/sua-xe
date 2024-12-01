@@ -71,6 +71,8 @@ const ChiTietYeuCau = () => {
         request.get("/parts/dropdown"),
       ]);
       setServicesList(servicesResponse.data);
+      console.log(partsResponse);
+      
       setPartsList(partsResponse.data);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu dropdown:", error);

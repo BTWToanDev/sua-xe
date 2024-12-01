@@ -1,169 +1,137 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import request from "../utils/request";
-
-interface UserInfo {
-  id: number;
-  fullName: string;
-  mobilePhone: string;
-  address: string;
-  email: string;
-}
+import { useNavigate, useParams } from "react-router-dom";
+import request from "/DoAn2/sua-xe/src/utils/request";
+import { useAuth } from "./AuthContext";
 
 const ThongTinTaiKhoan: React.FC = () => {
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [newUser, setNewUser] = useState({
+  const { mobilePhone } = useParams<{ mobilePhone: string }>(); // Lấy mobilePhone từ URL
+  const [userInfo, setUserInfo] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false); // Trạng thái chỉnh sửa
+  const [formData, setFormData] = useState({
     fullName: "",
-    mobilePhone: "",
-    address: "",
     email: "",
-    password: "",
-    userRoles: [""]
+    mobilePhone: mobilePhone || "", // Dùng mobilePhone từ URL nếu có
   });
-  const [updatedUser, setUpdatedUser] = useState({
-    fullName: "",
-    mobilePhone: "",
-    address: "",
-    email: ""
-  });
-  const [newRole, setNewRole] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const auth = useAuth();
+  const token = auth?.token;
   const navigate = useNavigate();
 
+  // Lấy thông tin người dùng khi component mount
   useEffect(() => {
-    const username = localStorage.getItem("username");
-    if (!username) {
-      console.error("Không tìm thấy username");
-      navigate("/");
+    if (!token) {
+      // Nếu không có token, điều hướng đến trang đăng nhập
+      navigate("/login");
       return;
     }
 
     const fetchUserInfo = async () => {
       try {
-        const response = await request.get(`/accounts/${username}`);
-        setUserInfo(response.data);
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin tài khoản:", error);
+        const response = await request.get("/home/user-info", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Kiểm tra nếu dữ liệu trả về hợp lệ
+        if (response.data && response.data.mobilePhone === mobilePhone) {
+          setUserInfo(response.data);
+          setFormData({
+            fullName: response.data.fullName,
+            email: response.data.email,
+            mobilePhone: response.data.mobilePhone,
+          });
+        } else {
+          setError("Thông tin người dùng không khớp với số điện thoại.");
+        }
+      } catch (err) {
+        setError("Có lỗi xảy ra khi tải thông tin người dùng.");
+        console.error(err);
       }
     };
 
     fetchUserInfo();
-  }, [navigate]);
+  }, [token, mobilePhone, navigate]);
 
-  const handleBackToHome = () => {
-    navigate("/");
+  // Xử lý sự kiện thay đổi thông tin trong form
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  const handleCreateUser = async () => {
-    try {
-      await request.post("/accounts", newUser);
-      alert("Tạo tài khoản mới thành công!");
-    } catch (error) {
-      console.error("Lỗi khi tạo tài khoản:", error);
-    }
-  };
+  // Xử lý việc lưu thông tin khi người dùng chỉnh sửa
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isEditing) return;
 
-  const handleUpdateUser = async () => {
     try {
-      const username = localStorage.getItem("username");
-      if (!username) return;
-      await request.put(`/accounts/infos/${username}`, updatedUser);
-      alert("Cập nhật thông tin thành công!");
-    } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin:", error);
-    }
-  };
-
-  const handleUpdateRole = async () => {
-    try {
-      const username = localStorage.getItem("username");
-      if (!username) return;
-      await request.patch(`/accounts/roles/${username}`, newRole);
-      alert("Cập nhật quyền thành công!");
-    } catch (error) {
-      console.error("Lỗi khi cập nhật quyền:", error);
-    }
-  };
-
-  const handleUpdatePassword = async () => {
-    try {
-      const username = localStorage.getItem("username");
-      if (!username) return;
-      await request.patch(`/accounts/password/${username}`, { username, password: newPassword });
-      alert("Cập nhật mật khẩu thành công!");
-    } catch (error) {
-      console.error("Lỗi khi cập nhật mật khẩu:", error);
+      const response = await request.put(
+        "/home/update-user-info",
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setUserInfo(response.data);
+      setIsEditing(false);
+    } catch (err) {
+      setError("Có lỗi xảy ra khi lưu thông tin.");
+      console.error(err);
     }
   };
 
   return (
-    <div className="p-6 bg-gradient-to-r from-gray-50 to-white shadow-lg rounded-lg max-w-3xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Thông Tin Tài Khoản</h2>
-        <button
-          onClick={handleBackToHome}
-          className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-300"
-        >
-          Quay về Trang Chủ
-        </button>
-      </div>
-
+    <div>
+      <h1>Thông Tin Tài Khoản</h1>
+      {error && <p className="error">{error}</p>}
       {userInfo ? (
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <label className="w-1/3 text-gray-700 font-semibold">Họ và Tên:</label>
-            <div className="w-2/3 text-gray-900">{userInfo.fullName}</div>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="fullName">Họ và tên</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
           </div>
-          <div className="flex items-center mb-4">
-            <label className="w-1/3 text-gray-700 font-semibold">Số Điện Thoại:</label>
-            <div className="w-2/3 text-gray-900">{userInfo.mobilePhone}</div>
+          <div>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
           </div>
-          <div className="flex items-center mb-4">
-            <label className="w-1/3 text-gray-700 font-semibold">Địa Chỉ:</label>
-            <div className="w-2/3 text-gray-900">{userInfo.address}</div>
+          <div>
+            <label htmlFor="mobilePhone">Số điện thoại</label>
+            <input
+              type="text"
+              id="mobilePhone"
+              name="mobilePhone"
+              value={formData.mobilePhone}
+              disabled
+            />
           </div>
-          <div className="flex items-center mb-4">
-            <label className="w-1/3 text-gray-700 font-semibold">Email:</label>
-            <div className="w-2/3 text-gray-900">{userInfo.email}</div>
-          </div>
-        </div>
+          <button type="submit" disabled={!isEditing}>
+            Lưu thông tin
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsEditing((prev) => !prev)}
+          >
+            {isEditing ? "Hủy" : "Chỉnh sửa"}
+          </button>
+        </form>
       ) : (
-        <div className="text-center text-gray-500">Đang tải thông tin tài khoản...</div>
+        <p>Đang tải thông tin người dùng...</p>
       )}
-
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold">Chức năng quản lý</h3>
-
-        <button
-          onClick={handleCreateUser}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition duration-300 mr-4"
-        >
-          Tạo tài khoản mới
-        </button>
-
-        <button
-          onClick={handleUpdateUser}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-400 transition duration-300 mr-4"
-        >
-          Cập nhật thông tin cá nhân
-        </button>
-
-        <button
-          onClick={handleUpdateRole}
-          className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-400 transition duration-300 mr-4"
-        >
-          Cập nhật quyền tài khoản
-        </button>
-
-        <button
-          onClick={handleUpdatePassword}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300"
-        >
-          Cập nhật mật khẩu
-        </button>
-      </div>
-
-      {/* Popup và form tương ứng sẽ được hiển thị khi click vào các nút */}
     </div>
   );
 };

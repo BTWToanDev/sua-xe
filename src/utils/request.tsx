@@ -29,8 +29,7 @@ request.interceptors.response.use(
 
             // Log error để xử lý khi bị 401 hoặc 403
             if (status === 401 || status === 403) {
-                console.log(status);
-                // window.location.href = '/';
+                window.location.href = '/login';
             }
 
             // Thêm thông báo lỗi từ API

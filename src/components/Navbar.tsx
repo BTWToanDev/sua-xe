@@ -1,20 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import request from "/DoAn2/sua-xe/src/utils/request";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const { token, logout, user } = useAuth(); // Lấy user từ AuthContext
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [userInfo, setUserInfo] = useState<any | null>(null); // State để lưu thông tin người dùng
 
+  const auth = useAuth(); // Lấy AuthContext
+  const navigate = useNavigate();
+  const user = auth?.user;
+  const token = auth?.token;
+  const logout = auth?.logout;
+
+ 
+  useEffect(() => {
+    if (token) {
+      const fetchUserInfo = async () => {
+        try {
+          const response = await request.get("/home/user-info", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUserInfo(response.data); // Lưu thông tin người dùng
+        } catch (error) {
+          console.error("Lỗi khi lấy thông tin người dùng:", error);
+          setUserInfo(null);
+        }
+      };
+      fetchUserInfo();
+    }
+  }, [token]);
+ 
   // Menu cố định
   const menuItems = [
     { id: 1, name: "Trang Chủ", link: "/" },
     { id: 2, name: "Dịch Vụ", link: "/dich-vu" },
     { id: 3, name: "Thông Tin", link: "/thong-tin" },
     { id: 4, name: "Liên Hệ", link: "/lien-he" },
-    { id: 5, name: "Tra Cứu", link: "/tra-cuu" }, // Thêm mục Tra Cứu
+    { id: 5, name: "Tra Cứu", link: "/tra-cuu" },
   ];
 
   const handleScheduleClick = () => {
@@ -22,12 +48,14 @@ const Navbar: React.FC = () => {
   };
 
   const handleAvatarClick = () => {
-    if (user?.username) {
-      localStorage.setItem("username", user.username);
-      navigate(`/ThongTinTaiKhoan`);
+    // Kiểm tra xem `userInfo` có chứa `mobilePhone` không
+    if (userInfo && userInfo.mobilePhone) {
+     
+      navigate(`/ThongTinTaiKhoan/${userInfo.mobilePhone}`);
     } else {
       console.error("Không tìm thấy thông tin người dùng");
-      navigate("/");
+      alert("Không tìm thấy thông tin người dùng. Vui lòng thử lại sau.");
+      navigate("/"); 
     }
   };
 
@@ -37,6 +65,45 @@ const Navbar: React.FC = () => {
 
   const toggleSearch = () => {
     setIsSearchVisible(!isSearchVisible);
+    setSearchQuery("");
+    setSearchResults([]); // Reset kết quả khi tắt
+  };
+
+  const handleSearch = async () => {
+    try {
+      const [partsRes, servicesRes, brandsRes] = await Promise.all([
+        request.get("/home/part-list"),
+        request.get("/home/service-list"),
+        request.get("/home/brand-list"),
+      ]);
+
+      const parts = partsRes.data.map((item: any) => ({
+        type: "part",
+        name: item.name,
+        id: item.id,
+      }));
+
+      const services = servicesRes.data.map((item: any) => ({
+        type: "service",
+        name: item.name,
+        id: item.id,
+      }));
+
+      const brands = brandsRes.data.map((item: any) => ({
+        type: "brand",
+        name: item.name,
+        id: item.id,
+      }));
+
+      const allData = [...parts, ...services, ...brands];
+      const filteredResults = allData.filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      setSearchResults(filteredResults);
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm:", error);
+    }
   };
 
   return (
@@ -89,11 +156,16 @@ const Navbar: React.FC = () => {
             </svg>
           </button>
           {isSearchVisible && (
-            <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              className="border-2 border-gray-300 bg-transparent text-black rounded-md px-4 py-2 ml-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-300"
-            />
+            <>
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                className="border-2 border-gray-300 bg-transparent text-black rounded-md px-4 py-2 ml-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-300"
+              />
+            </>
           )}
         </div>
 
@@ -166,7 +238,7 @@ const Navbar: React.FC = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                d="M4 6h16M4 12h16m-7 6h7"
+                d="M4 6h16M4 12h16M4 18h16"
               ></path>
             </svg>
           </button>
@@ -175,26 +247,18 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="lg:hidden bg-gray-100 shadow-lg">
-          <ul className="flex flex-col items-center space-y-4 py-4">
+        <div className="lg:hidden bg-white shadow-lg px-4 py-5">
+          <ul>
             {menuItems.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className="py-2">
                 <Link
                   to={item.link}
-                  className="text-gray-700 hover:text-yellow-400 transition duration-300"
+                  className="block text-black hover:text-yellow-400 transition duration-300"
                 >
                   {item.name}
                 </Link>
               </li>
             ))}
-            <li>
-              <button
-                onClick={() => navigate("/tra-cuu")}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
-              >
-                Tra Cứu
-              </button>
-            </li>
           </ul>
         </div>
       )}

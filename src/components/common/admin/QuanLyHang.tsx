@@ -139,13 +139,7 @@ const QuanLyHang = () => {
       Header: "Country",
       accessor: "country",
     },
-    {
-      Header: "IsActive",
-      accessor: "isActive",
-      Cell: ({ value }: any) => (
-        <span>{value ? "Active" : "Inactive"}</span>
-      ),
-    },
+   
     {
       Header: "Thao tác",
       accessor: "action",

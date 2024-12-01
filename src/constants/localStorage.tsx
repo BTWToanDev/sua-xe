@@ -1,11 +1,4 @@
-// Hàm lưu trữ một mục với thời gian hết hạn
-
-interface TokenData {
-    value:string;
-    expiry: number;
-}
-
-export const setItemWithExpiry = (key: string, value: any, ttl: number): void => {
+export const setItemWithExpiry = (key: string, value: any, ttl: string): void => {
     const now = new Date();
   
     const item = {
@@ -16,37 +9,52 @@ export const setItemWithExpiry = (key: string, value: any, ttl: number): void =>
 };
 
 // Hàm lưu token với thời gian hết hạn
-export const setTokenWithExpiry = (value: string, ttl: number): void => {
+export const setTokenWithExpiry = (value: string, ttl: string): void => {
     const now = new Date();
   
     const item = {
         value: value,
         expiry: now.getTime() + ttl,
     };
-    localStorage.setItem('token', JSON.stringify(item));
+    localStorage.setItem('token', value);
+    localStorage.setItem('expire',ttl);
 };
 
 // Hàm lấy token và kiểm tra thời gian hết hạn
 export const getTokenWithExpiry = (): string | null => {
-    const itemStr = localStorage.getItem('token');
-    
-    if (!itemStr) {
-        return null;
+    const token = localStorage.getItem('token');
+    const expiryStr = localStorage.getItem('expire');
+
+    // Log giá trị của token và expiry để kiểm tra
+    console.log('Token từ localStorage:', token);
+    console.log('Expire từ localStorage:', expiryStr);
+
+    if (!token || !expiryStr) {
+        console.log('Không tìm thấy token hoặc expire.');
+        return null; // Không có token hoặc expiry
     }
 
-    // Ép kiểu itemStr thành JSON với kiểu đã định nghĩa
-    const item: TokenData = JSON.parse(itemStr) as TokenData;
-    const now = new Date();
+    // Chuyển expiry sang số nguyên
+    const expiryTime = new Date(expiryStr);
    
-    if (now.getTime() > item.expiry) {
+
+   
+
+    const now = new Date();
+    console.log('Thời gian hiện tại:', now);
+
+    // Kiểm tra nếu ngày hết hạn đã qua
+    if (now > expiryTime) {
+        console.log('Token đã hết hạn, xóa khỏi localStorage.');
         localStorage.removeItem('token');
-        return null;
+        localStorage.removeItem('expire');
+        return null; // Token hết hạn
     }
 
-    return item.value;
+    return token; // Trả về token nếu còn hiệu lực
 };
 
 // Hàm xóa token
 export const removeToken = (): void => {
     localStorage.removeItem('token');
-};
+}; 

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import request from "../utils/request";
 import Table from "../components/common/Table";
+import { getTokenWithExpiry } from "../constants/localStorage"; // Import hàm kiểm tra token
 
 interface TraCuuInfo {
   id: number;
@@ -16,7 +17,7 @@ interface TraCuuInfo {
 const TraCuu = () => {
   const [data, setData] = useState<TraCuuInfo[]>([]);
   const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [username, setUsername] = useState<string>(""); // Thêm trạng thái cho username
+  const [username, setUsername] = useState<string>(""); 
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -24,6 +25,9 @@ const TraCuu = () => {
   const [error, setError] = useState<string>("");
 
   const navigate = useNavigate();
+
+  // Kiểm tra nếu người dùng đã đăng nhập
+  const token = getTokenWithExpiry();  // Lấy token từ localStorage
 
   // Fetch dữ liệu
   const fetchData = useCallback(() => {
@@ -47,6 +51,12 @@ const TraCuu = () => {
     const endpoint = username
       ? "home/service-requests-by-username"
       : "home/service-requests-by-mobile-phone";
+
+    // Kiểm tra nếu username được nhập và người dùng chưa đăng nhập
+    if (username && !token) {
+      setError("Bạn phải đăng nhập để tra cứu bằng tên đăng nhập.");
+      return;
+    }
 
     request
       .get(endpoint, {
@@ -79,7 +89,7 @@ const TraCuu = () => {
         console.error("Lỗi khi tra cứu:", error);
         setError("Có lỗi xảy ra khi tra cứu. Vui lòng thử lại sau.");
       });
-  }, [phoneNumber, username, pageIndex, pageSize, keyword]);
+  }, [phoneNumber, username, pageIndex, pageSize, keyword, token]);
 
   useEffect(() => {
     if (phoneNumber || username) fetchData();
@@ -169,10 +179,10 @@ const TraCuu = () => {
         </button>
       </div>
 
-      {/* Nhập số điện thoại hoặc username */}
+      {/* Nhập số điện thoại để tra cứu */}
       <div className="mb-6">
         <label className="block text-gray-700 font-semibold mb-2">
-          Nhập số điện thoại hoặc tên đăng nhập để tra cứu:
+          Nhập số điện thoại để tra cứu:
         </label>
         <div className="flex items-center space-x-4">
           <input
@@ -182,13 +192,6 @@ const TraCuu = () => {
             placeholder="Nhập số điện thoại"
             className="border p-2 rounded-md w-full focus:ring-2 focus:ring-blue-500 outline-none"
           />
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Nhập tên đăng nhập"
-            className="border p-2 rounded-md w-full focus:ring-2 focus:ring-blue-500 outline-none"
-          />
           <button
             onClick={handleSearch}
             className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
@@ -196,8 +199,34 @@ const TraCuu = () => {
             Tra Cứu
           </button>
         </div>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
+
+      {/* Nhập tên đăng nhập để tra cứu (chỉ khi đã đăng nhập) */}
+      {token && (
+        <div className="mb-6">
+          <label className="block text-gray-700 font-semibold mb-2">
+            Nhập tên đăng nhập để tra cứu:
+          </label>
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Nhập tên đăng nhập"
+              className="border p-2 rounded-md w-full focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+            <button
+              onClick={handleSearch}
+              className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+            >
+              Tra Cứu
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hiển thị lỗi nếu có */}
+      {error && <p className="text-red-500 mt-2">{error}</p>}
 
       {/* Bảng thông tin tra cứu */}
       <Table
