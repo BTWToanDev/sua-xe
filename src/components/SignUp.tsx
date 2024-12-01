@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaGoogle, FaFacebook } from 'react-icons/fa';
 import * as request from '../utils/request'; // Thêm import request
 import { toast } from 'react-toastify';
-
+import { useNavigate } from 'react-router-dom'; 
 const SignUp: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -18,17 +18,17 @@ const SignUp: React.FC = () => {
     confirmPassword: '',
     termsAccepted: ''
   });
-
-  // Kiểm tra điều kiện cho Họ và Tên
+  const navigate = useNavigate(); 
+ 
   const validateName = (name: string) => /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴặẹẽẻềếểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ\s]+$/.test(name);
 
-  // Kiểm tra điều kiện cho số điện thoại
+  
   const validatePhoneNumber = (number: string) => /^[0-9]{10,11}$/.test(number);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Kiểm tra điều kiện cho từng trường
+   
     let newErrors = {
       fullName: validateName(fullName) ? '' : 'Họ tên không được chứa số hoặc ký tự đặc biệt.',
       phoneNumber: validatePhoneNumber(phoneNumber) ? '' : 'Số điện thoại phải có 10 hoặc 11 chữ số.',
@@ -43,22 +43,34 @@ const SignUp: React.FC = () => {
     }
 
     try {
-      // Gửi yêu cầu đăng ký đến API
+     
       const response = await request.post('/auth/signup', {
         fullName,
-        phoneNumber,
+        mobilePhone: phoneNumber,
         address,
         email,
-        password
+        password,
+        userRoles: [] 
       });
 
       toast.success('Đăng ký thành công!');
       console.log('Đăng ký thành công với thông tin:', response);
+      navigate('/login');
     } catch (error: any) {
-      console.error('Đăng ký thất bại:', error.response?.data || error.message);
-      toast.error('Đăng ký thất bại! Vui lòng kiểm tra lại thông tin.');
+    
+      console.error('Lỗi chi tiết đăng ký: ', error);
+      
+   
+      if (error.response && error.response.data) {
+       
+        toast.error(`Đăng ký thất bại: ${error.response.data.message || 'Có lỗi xảy ra.'}`);
+      } else {
+       
+        toast.error('Đăng ký thất bại! Vui lòng kiểm tra lại thông tin.');
+      }
     }
   };
+
 
   return (
     <div className="container mx-auto py-8">

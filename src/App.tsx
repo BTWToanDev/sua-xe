@@ -31,6 +31,8 @@ import TraCuu from './components/TraCuu';
 import ThongTinTaiKhoan from './components/ThongTinTaiKhoan';
 import ThanhToanThanhCong from './components/ThanhToanThanhCong';
 import QuanLyTaiKhoanKhachHang from './components/common/admin/QuanLyTaiKhoanKhachHang';
+import TraCuuTaiKhoanLogin  from './components/TraCuuTaiKhoanLogin';
+import ChiTietTraCuuTaiKhoan from './components/ChiTietTraCuuTaiKhoan';
 import { ToastContainer } from 'react-toastify';
 const App: React.FC = () => {
   return (
@@ -43,8 +45,10 @@ const App: React.FC = () => {
           <Route path="/tra-cuu" element={<TraCuu />} />
           <Route path="/tao-don" element={<TaoDon />} /> 
           <Route path="/chi-tiet-tra-cuu" element={<ChiTietTraCuu />} />
+          <Route path="/chi-tiet-tra-cuu-tai-khoan" element={<ChiTietTraCuu />} />
           <Route path="/ThanhToanThanhCong" element={<ThanhToanThanhCong />} />
           <Route path="/ThongTinTaiKhoan/:mobilePhone" element={<ThongTinTaiKhoan />} />
+          <Route path="/tra-cuu-tai-khoan" element={<TraCuuTaiKhoanLogin />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           {/* <Route path="/ChiTietPhuTung" element={<PartDetails />} />

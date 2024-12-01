@@ -2,23 +2,34 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import request from "../utils/request";
 import pdfMake from 'pdfmake/build/pdfmake';
-  import pdfFonts from 'pdfmake/build/vfs_fonts';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { formatDate } from "../utils/format";
-const ChiTietTraCuu = () => {
+
+const ChiTietTraCuuTaiKhoan = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { phoneNumber, detailId } = state || {};
-  
+  const { detailId } = state || {};  // Chỉ cần nhận `detailId`
+  console.log("detailId from state:", detailId);
   const [detailData, setDetailData] = useState<any>(null);
 
   useEffect(() => {
-    if (phoneNumber && detailId) {
+    console.log("Checking detailId in useEffect:", detailId);  // Kiểm tra xem `detailId` có sẵn khi gọi API không
+    if (detailId) {
       request
-        .get(`/servicerequests/${detailId}`, { params: { phoneNumber } })
-        .then((response) => setDetailData(response.data))
-        .catch((err) => console.error("Lỗi khi lấy chi tiết:", err));
+        .get(`/servicerequests/${detailId}`)
+        .then((response) => {
+          console.log("Dữ liệu trả về từ API:", response.data);  // Kiểm tra dữ liệu nhận được từ API
+          setDetailData(response.data);  // Lưu dữ liệu vào state
+        })
+        .catch((err) => {
+          console.error("Lỗi khi lấy chi tiết:", err);  // Kiểm tra lỗi nếu có
+        });
+    } else {
+      console.log("Không có `detailId`, không thể lấy dữ liệu");
     }
-  }, [phoneNumber, detailId]);
+  }, [detailId]);
+  
+  
 
   if (!detailData) {
     return (
@@ -36,15 +47,7 @@ const ChiTietTraCuu = () => {
         serviceRequestId: detailId,
         amount: detailData.totalPrice,
       };
-      function getTokenFromURL(url: string): string | null {
-        try {
-          const urlParams = new URL(url).searchParams;
-          return urlParams.get("token");
-        } catch (error) {
-          console.error("Invalid URL:", error);
-          return null;
-        }
-      }
+
       request
         .post('/payments/PayPal/create', payload)
         .then((response) => {
@@ -52,28 +55,30 @@ const ChiTietTraCuu = () => {
           if (response) {
             const popupWindow = window.open(response.data.url, '_blank', 'width=800,height=600');
 
-            // Kiểm tra nếu cửa sổ không bị chặn (trình duyệt có thể chặn popup)
             if (!popupWindow) {
               alert("Cửa sổ popup bị chặn, vui lòng kiểm tra trình duyệt của bạn.");
             }
 
             const checkPopupClosed = setInterval(() => {
               if (popupWindow && popupWindow.closed) {
-                clearInterval(checkPopupClosed); 
-                const token = getTokenFromURL(response.data.url);
+                clearInterval(checkPopupClosed);
+                // Xử lý kiểm tra trạng thái thanh toán
+                const token = new URL(popupWindow.location.href).searchParams.get("token");
 
-                request.get("/payments/paypal/check-payment/"+ token)
-                  .then((response) => {
-                    if (response.status === 200) {
-                      navigate('/ThanhToanThanhCong');
-                    } else {
-                      alert("Thanh toán thất bại");
-                    }
-                  })
-                  .catch((error) => {
-                    console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
-                    alert("Đã xảy ra lỗi khi kiểm tra trạng thái thanh toán.");
-                  });
+                if (token) {
+                  request.get(`/payments/paypal/check-payment/${token}`)
+                    .then((response) => {
+                      if (response.status === 200) {
+                        navigate('/ThanhToanThanhCong');
+                      } else {
+                        alert("Thanh toán thất bại");
+                      }
+                    })
+                    .catch((error) => {
+                      console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
+                      alert("Đã xảy ra lỗi khi kiểm tra trạng thái thanh toán.");
+                    });
+                }
               }
             }, 1000);
           } else {
@@ -84,13 +89,12 @@ const ChiTietTraCuu = () => {
           console.error("Lỗi khi thanh toán:", error);
           alert("Đã xảy ra lỗi trong quá trình thanh toán. Vui lòng thử lại.");
         });
-    } 
+    }
   };
 
   const handleCancel = () => alert("Yêu cầu đã được hủy!");
 
   const handlePrintInvoice = () => {
-   // pdfMake.vfs = pdfFonts.pdfMake.vfs;
     console.log(detailData);
     const docDefinition = {
       pageSize: "A4",
@@ -112,7 +116,7 @@ const ChiTietTraCuu = () => {
                 { text: "Đơn Giá", style: "tableHeader" },
                 { text: "Tổng Tiền", style: "tableHeader" },
               ],
-              ...detailData.services.map((service:any) => [
+              ...detailData.services.map((service: any) => [
                 service.name,
                 service.quantity,
                 service.price.toLocaleString(),
@@ -131,17 +135,16 @@ const ChiTietTraCuu = () => {
                 { text: "Tổng Tiền", style: "tableHeader" },
                 { text: "Bảo hành đến", style: "tableHeader" },
               ],
-              ...detailData.parts.map((part:any) => [
+              ...detailData.parts.map((part: any) => [
                 part.name,
                 part.quantity,
                 part.price.toLocaleString(),
                 (part.quantity * part.price).toLocaleString(),
-                part.warrantyTo
+                part.warrantyTo,
               ]),
             ],
           },
         },
-        
       ],
       styles: {
         header: { fontSize: 18, bold: true, margin: [0, 0, 0, 20] },
@@ -150,12 +153,8 @@ const ChiTietTraCuu = () => {
         content: { fontSize: 12, margin: [0, 0, 0, 5] },
       },
     };
-    
-    
     pdfMake.createPdf(docDefinition).download("hoa-don-dich-vu.pdf");
   };
-  
-
 
   return (
     <div className="p-6 max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg mt-8 text-white">
@@ -172,7 +171,7 @@ const ChiTietTraCuu = () => {
 
       {/* Thông tin cơ bản */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-700 p-4 rounded-md shadow">
-        {[
+        {[ 
           { label: "Số Điện Thoại", value: detailData.mobilePhone },
           { label: "Họ và Tên", value: detailData.fullName },
           { label: "Email", value: detailData.email },
@@ -207,56 +206,6 @@ const ChiTietTraCuu = () => {
         </p>
       </div>
 
-      {/* Videos */}
-      {detailData.videos.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-bold mb-4">Videos</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {detailData.videos.map((video: string, index: number) => (
-              <video
-                key={index}
-                controls
-                className="rounded-md shadow-md w-full h-28"
-              >
-                <source src={video} type="video/mp4" />
-                Trình duyệt không hỗ trợ phát video.
-              </video>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Images */}
-      {detailData.images.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-bold mb-4">Hình Ảnh</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {detailData.images.map((image: string, index: number) => (
-              <img
-                key={index}
-                src={image}
-                alt={`Hình ảnh ${index + 1}`}
-                className="rounded-md shadow-md w-full h-28 object-cover"
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Problems */}
-      {detailData.problems.length > 0 && (
-        <div className="mb-6 bg-gray-700 p-4 rounded-md shadow">
-          <h3 className="text-lg font-bold mb-4">Vấn Đề</h3>
-          <ul className="list-disc list-inside">
-            {detailData.problems.map((problem: string, index: number) => (
-              <li key={index} className="text-sm text-gray-100">
-                {problem}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {/* Buttons */}
       <div className="flex justify-between mt-4">
         <button
@@ -282,4 +231,4 @@ const ChiTietTraCuu = () => {
   );
 };
 
-export default ChiTietTraCuu;
+export default ChiTietTraCuuTaiKhoan;

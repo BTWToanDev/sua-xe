@@ -21,8 +21,8 @@ const TaoDon = () => {
   const fetchDropdownData = useCallback(async () => {
     try {
       const [problemsResponse, servicesResponse] = await Promise.all([
-        request.get("/Problems/dropdown"),
-        request.get("/Services/dropdown"),
+        request.get("/home/problem-dropdown"),
+        request.get("/home/service-dropdown"),
       ]);
       setProblemsList(problemsResponse.data);
       setServicesList(servicesResponse.data);

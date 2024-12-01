@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
     { id: 2, name: "Dịch Vụ", link: "/dich-vu" },
     { id: 3, name: "Thông Tin", link: "/thong-tin" },
     { id: 4, name: "Liên Hệ", link: "/lien-he" },
-    { id: 5, name: "Tra Cứu", link: "/tra-cuu" },
+    { id: 5, name: "Tra Cứu Tài Khoản", link: "/tra-cuu-tai-khoan", show: !!token },  
   ];
 
   const handleScheduleClick = () => {
@@ -121,17 +121,19 @@ const Navbar: React.FC = () => {
           </div>
           {/* Static Menu */}
           <ul className="hidden lg:flex space-x-6 text-black font-semibold">
-            {menuItems.map((item) => (
-              <li key={item.id}>
-                <Link
-                  to={item.link}
-                  className="hover:text-yellow-400 transition duration-300"
-                >
-                  {item.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+  {menuItems.map((item) => 
+    item.show !== false && (
+      <li key={item.id}>
+        <Link
+          to={item.link}
+          className="hover:text-yellow-400 transition duration-300"
+        >
+          {item.name}
+        </Link>
+      </li>
+    )
+  )}
+</ul>
         </div>
 
         {/* Search Icon */}
