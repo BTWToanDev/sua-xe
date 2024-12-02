@@ -17,6 +17,7 @@ import QuanLyPhuTung from './components/common/admin/QuanLyPhuTung';
 import QuanLyPhuongTien from './components/common/admin/QuanLyPhuongTien';
 import QuanLyHang from './components/common/admin/QuanLyHang';
 import ThongKe from './components/common/admin/ThongKe';
+import ThongKeDoanhThu from './components/common/admin/ThongKeDoanhThu';
 import QuanLyVanDe from './components/common/admin/QuanLyVanDe';
 import Kho from './components/common/admin/Kho';
 import AdminDashboard from './components/common/admin/AdminDashboard';
@@ -45,7 +46,7 @@ const App: React.FC = () => {
           <Route path="/tra-cuu" element={<TraCuu />} />
           <Route path="/tao-don" element={<TaoDon />} /> 
           <Route path="/chi-tiet-tra-cuu" element={<ChiTietTraCuu />} />
-          <Route path="/chi-tiet-tra-cuu-tai-khoan" element={<ChiTietTraCuu />} />
+          <Route path="/chi-tiet-tra-cuu-tai-khoan" element={<ChiTietTraCuuTaiKhoan />} />
           <Route path="/ThanhToanThanhCong" element={<ThanhToanThanhCong />} />
           <Route path="/ThongTinTaiKhoan/:mobilePhone" element={<ThongTinTaiKhoan />} />
           <Route path="/tra-cuu-tai-khoan" element={<TraCuuTaiKhoanLogin />} />
@@ -67,7 +68,7 @@ const App: React.FC = () => {
             <Route path="phu-tung" element={<QuanLyPhuTung />} />
             <Route path="phuong-tien" element={<QuanLyPhuongTien />} />
             <Route path="hang" element={<QuanLyHang />} />
-           
+           <Route path="thong-ke-doanh-thu" element={<ThongKeDoanhThu />} />
             <Route path="Thong-ke" element={<ThongKe />} />
             <Route path="kho/:partId" element={<Kho />} />
             <Route path="deirec" element={<Deirec />} />

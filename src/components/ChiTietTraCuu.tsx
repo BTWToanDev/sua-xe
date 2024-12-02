@@ -15,7 +15,11 @@ const ChiTietTraCuu = () => {
     if (phoneNumber && detailId) {
       request
         .get(`/servicerequests/${detailId}`, { params: { phoneNumber } })
-        .then((response) => setDetailData(response.data))
+        .then((response) => {
+          console.log(response);
+          
+          setDetailData(response.data)
+        })
         .catch((err) => console.error("Lỗi khi lấy chi tiết:", err));
     }
   }, [phoneNumber, detailId]);

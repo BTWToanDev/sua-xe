@@ -25,10 +25,6 @@ export const getTokenWithExpiry = (): string | null => {
     const token = localStorage.getItem('token');
     const expiryStr = localStorage.getItem('expire');
 
-    // Log giá trị của token và expiry để kiểm tra
-    console.log('Token từ localStorage:', token);
-    console.log('Expire từ localStorage:', expiryStr);
-
     if (!token || !expiryStr) {
         console.log('Không tìm thấy token hoặc expire.');
         return null; // Không có token hoặc expiry
@@ -41,11 +37,9 @@ export const getTokenWithExpiry = (): string | null => {
    
 
     const now = new Date();
-    console.log('Thời gian hiện tại:', now);
 
     // Kiểm tra nếu ngày hết hạn đã qua
     if (now > expiryTime) {
-        console.log('Token đã hết hạn, xóa khỏi localStorage.');
         localStorage.removeItem('token');
         localStorage.removeItem('expire');
         return null; // Token hết hạn

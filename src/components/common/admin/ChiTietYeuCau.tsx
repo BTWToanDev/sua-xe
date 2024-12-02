@@ -27,7 +27,7 @@ const ChiTietYeuCau = () => {
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [serviceType, setServiceType] = useState<string>("");
   const [status, setStatus] = useState<string>("");
-
+  
   const [videos, setVideos] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
@@ -293,6 +293,33 @@ const ChiTietYeuCau = () => {
     }
   };
 
+  const handleUpdateQuantity = (type: "services" | "parts", id: number, action: "increase" | "decrease") => {
+    if (type === "services") {
+      setServices((prevServices) => 
+        prevServices.map((service) => 
+          service.id === id
+            ? {
+                ...service,
+                quantity: action === "increase" ? service.quantity + 1 : Math.max(1, service.quantity - 1)
+              }
+            : service
+        )
+      );
+    } else {
+      setParts((prevParts) => 
+        prevParts.map((part) => 
+          part.id === id
+            ? {
+                ...part,
+                quantity: action === "increase" ? part.quantity + 1 : Math.max(1, part.quantity - 1)
+              }
+            : part
+        )
+      );
+    }
+  };
+  
+
   return (
     <div className="p-6 bg-gray-900 rounded-xl shadow-2xl max-w-6xl mx-auto mt-8">
       <h2 className="text-4xl font-bold text-white mb-6 border-b border-gray-600 pb-4">Chi Tiết Yêu Cầu</h2>
@@ -307,7 +334,8 @@ const ChiTietYeuCau = () => {
           { label: "Issue Description", value: issueDescription },
           { label: "Total Price", value: totalPrice },
           { label: "Service Type", value: serviceType },
-          { label: "Status", value: status },
+          { label: "Status", value: status },  
+         { label: "Problems", value: problems },
         ].map((item, index) => (
           <div key={index} className="flex items-center justify-between bg-gray-800 text-gray-300 rounded-lg px-4 py-2 shadow-md">
             <label className="font-semibold">{item.label}:</label>
@@ -372,51 +400,82 @@ const ChiTietYeuCau = () => {
   
       {/* Services */}
       <div className="mb-6">
-        <h3 className="text-2xl font-semibold text-white mb-4">Services</h3>
-        <button
-          onClick={() => setShowPopup("services")}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-150"
-        >
-          Thêm Dịch Vụ
-        </button>
-        <ul className="space-y-4 mt-4">
-          {services.map((service) => (
-            <li key={service.id} className="bg-gray-800 text-gray-300 p-4 rounded-lg shadow-md flex justify-between">
-              <span>{service.name} - Số lượng: {service.quantity} - Giá: {service.price}</span>
-              <button
-                onClick={() => handleRemoveItem("services", service.id)}
-                className="text-red-500 hover:text-red-600"
-              >
-                Xóa
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+  <h3 className="text-2xl font-semibold text-white mb-4">Services</h3>
+  <button
+    onClick={() => setShowPopup("services")}
+    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-150"
+  >
+    Thêm Dịch Vụ
+  </button>
+  <ul className="space-y-4 mt-4">
+    {services.map((service) => (
+      <li key={service.id} className="bg-gray-800 text-gray-300 p-4 rounded-lg shadow-md flex justify-between items-center">
+        <span>{service.name} - Số lượng: {service.quantity} - Giá: {service.price}</span>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handleUpdateQuantity("services", service.id, "decrease")}
+            className="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600"
+          >
+            -
+          </button>
+          <button
+            onClick={() => handleUpdateQuantity("services", service.id, "increase")}
+            className="bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-600"
+          >
+            +
+          </button>
+          <button
+            onClick={() => handleRemoveItem("services", service.id)}
+            className="text-red-500 hover:text-red-600"
+          >
+            Xóa
+          </button>
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
   
       {/* Parts */}
       <div className="mb-6">
-        <h3 className="text-2xl font-semibold text-white mb-4">Parts</h3>
-        <button
-          onClick={() => setShowPopup("parts")}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-150"
-        >
-          Thêm Phụ Tùng
-        </button>
-        <ul className="space-y-4 mt-4">
-          {parts.map((part) => (
-            <li key={part.id} className="bg-gray-800 text-gray-300 p-4 rounded-lg shadow-md flex justify-between">
-              <span>{part.name} - Số lượng: {part.quantity} - Giá: {part.price} - Bảo hành: {part.warrantyTo}</span>
+    <h3 className="text-2xl font-semibold text-white mb-4">Parts</h3>
+    <button
+      onClick={() => setShowPopup("parts")}
+      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-150"
+    >
+      Thêm Phụ Tùng
+    </button>
+    <ul className="space-y-4 mt-4">
+      {parts.map((part) => (
+        <li key={part.id} className="bg-gray-800 text-gray-300 p-4 rounded-lg shadow-md flex justify-between">
+          <div>
+            <span>{part.name} - Giá: {part.price} - Bảo hành: {part.warrantyTo}</span>
+            <div className="mt-2 flex items-center">
               <button
-                onClick={() => handleRemoveItem("parts", part.id)}
-                className="text-red-500 hover:text-red-600"
+                onClick={() => handleUpdateQuantity("parts", part.id, "decrease")}
+                className="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600 transition duration-150"
               >
-                Xóa
+                -
               </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+              <span className="mx-2">Số lượng: {part.quantity}</span>
+              <button
+                onClick={() => handleUpdateQuantity("parts", part.id, "increase")}
+                className="bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-600 transition duration-150"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={() => handleRemoveItem("parts", part.id)}
+            className="text-red-500 hover:text-red-600"
+          >
+            Xóa
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
   
       {/* Nút lưu */}
       <button

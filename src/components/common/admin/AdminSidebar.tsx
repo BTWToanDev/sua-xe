@@ -67,7 +67,13 @@ const AdminSidebar: React.FC = () => {
             to="/admin/thong-ke"
             className="block py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300 w-full text-left"
           >
-            Thống kê
+            Thống kê Yêu Cầu
+          </Link>
+          <Link
+            to="/admin/thong-ke-doanh-thu"
+            className="block py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300 w-full text-left"
+          >
+            Thống kê Doanh Thu
           </Link>
            <Link
             to="/admin/Kho"

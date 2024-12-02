@@ -18,7 +18,7 @@ const ChiTietTraCuuTaiKhoan = () => {
       request
         .get(`/servicerequests/${detailId}`)
         .then((response) => {
-          console.log("Dữ liệu trả về từ API:", response.data);  // Kiểm tra dữ liệu nhận được từ API
+          console.log("Dữ liệu trả về từ API:", response);  // Kiểm tra dữ liệu nhận được từ API
           setDetailData(response.data);  // Lưu dữ liệu vào state
         })
         .catch((err) => {
@@ -29,6 +29,7 @@ const ChiTietTraCuuTaiKhoan = () => {
     }
   }, [detailId]);
   
+  console.log(detailData);
   
 
   if (!detailData) {
@@ -47,50 +48,56 @@ const ChiTietTraCuuTaiKhoan = () => {
         serviceRequestId: detailId,
         amount: detailData.totalPrice,
       };
-
+      function getTokenFromURL(url: string): string | null {
+        try {
+          const urlParams = new URL(url).searchParams;
+          return urlParams.get("token");
+        } catch (error) {
+          console.error("Invalid URL:", error);
+          return null;
+        }
+      }
       request
-        .post('/payments/PayPal/create', payload)
-        .then((response) => {
-          console.log(response.data.url);
-          if (response) {
-            const popupWindow = window.open(response.data.url, '_blank', 'width=800,height=600');
+      .post('/payments/PayPal/create', payload)
+      .then((response) => {
+        console.log(response.data.url);
+        if (response) {
+          const popupWindow = window.open(response.data.url, '_blank', 'width=800,height=600');
 
-            if (!popupWindow) {
-              alert("Cửa sổ popup bị chặn, vui lòng kiểm tra trình duyệt của bạn.");
-            }
-
-            const checkPopupClosed = setInterval(() => {
-              if (popupWindow && popupWindow.closed) {
-                clearInterval(checkPopupClosed);
-                // Xử lý kiểm tra trạng thái thanh toán
-                const token = new URL(popupWindow.location.href).searchParams.get("token");
-
-                if (token) {
-                  request.get(`/payments/paypal/check-payment/${token}`)
-                    .then((response) => {
-                      if (response.status === 200) {
-                        navigate('/ThanhToanThanhCong');
-                      } else {
-                        alert("Thanh toán thất bại");
-                      }
-                    })
-                    .catch((error) => {
-                      console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
-                      alert("Đã xảy ra lỗi khi kiểm tra trạng thái thanh toán.");
-                    });
-                }
-              }
-            }, 1000);
-          } else {
-            alert("Không nhận được URL hợp lệ từ API.");
+          // Kiểm tra nếu cửa sổ không bị chặn (trình duyệt có thể chặn popup)
+          if (!popupWindow) {
+            alert("Cửa sổ popup bị chặn, vui lòng kiểm tra trình duyệt của bạn.");
           }
-        })
-        .catch((error) => {
-          console.error("Lỗi khi thanh toán:", error);
-          alert("Đã xảy ra lỗi trong quá trình thanh toán. Vui lòng thử lại.");
-        });
-    }
-  };
+
+          const checkPopupClosed = setInterval(() => {
+            if (popupWindow && popupWindow.closed) {
+              clearInterval(checkPopupClosed); 
+              const token = getTokenFromURL(response.data.url);
+
+              request.get("/payments/paypal/check-payment/"+ token)
+                .then((response) => {
+                  if (response.status === 200) {
+                    navigate('/ThanhToanThanhCong');
+                  } else {
+                    alert("Thanh toán thất bại");
+                  }
+                })
+                .catch((error) => {
+                  console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
+                  alert("Đã xảy ra lỗi khi kiểm tra trạng thái thanh toán.");
+                });
+            }
+          }, 1000);
+        } else {
+          alert("Không nhận được URL hợp lệ từ API.");
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi thanh toán:", error);
+        alert("Đã xảy ra lỗi trong quá trình thanh toán. Vui lòng thử lại.");
+      });
+  } 
+};
 
   const handleCancel = () => alert("Yêu cầu đã được hủy!");
 
