@@ -27,14 +27,14 @@ const ChiTietYeuCau = () => {
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [serviceType, setServiceType] = useState<string>("");
   const [status, setStatus] = useState<string>("");
-  
+  const [statusValue, setStatusValue] = useState<string>("A");
   const [videos, setVideos] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
 
   const [services, setServices] = useState<Service[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
-
+ 
   const [servicesList, setServicesList] = useState<Service[]>([]);
   const [partsList, setPartsList] = useState<Part[]>([]);
   const [showPopup, setShowPopup] = useState<"services" | "parts" | null>(null);
@@ -319,6 +319,33 @@ const ChiTietYeuCau = () => {
     }
   };
   
+  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value;
+    setStatus(newStatus);
+  
+    
+    const statusMapping: { [key: string]: number } = {
+      "Mới": 1, 
+      "Đang kiểm tra": 2, 
+      "Đang đợi thanh toán": 3, 
+      "Đang xử lý": 4, 
+      "Hoàn thành": 5, 
+      "Hủy": 6, 
+    };
+  
+    const statusNumber = statusMapping[newStatus] || 1;
+  
+    try {
+      await request.patch(`/ServiceRequests/status/${id}?status=${statusNumber}`);
+     
+    } catch (error) {
+      console.log(error);
+      alert("Có lỗi xảy ra khi cập nhật trạng thái. Vui lòng thử lại!");
+    }
+  };
+  
+  
+
 
   return (
     <div className="p-6 bg-gray-900 rounded-xl shadow-2xl max-w-6xl mx-auto mt-8">
@@ -334,12 +361,28 @@ const ChiTietYeuCau = () => {
           { label: "Issue Description", value: issueDescription },
           { label: "Total Price", value: totalPrice },
           { label: "Service Type", value: serviceType },
-          { label: "Status", value: status },  
-         { label: "Problems", value: problems },
+          { label: "Status", value: statusValue },
+          { label: "Problems", value: problems },
         ].map((item, index) => (
           <div key={index} className="flex items-center justify-between bg-gray-800 text-gray-300 rounded-lg px-4 py-2 shadow-md">
             <label className="font-semibold">{item.label}:</label>
-            <p className="text-white">{item.value}</p>
+            {item.label === "Status" ? (
+            <select
+            value={status}
+            onChange={handleStatusChange}
+            className="bg-gray-700 text-white rounded-md px-4 py-2"
+          >
+            <option value="Mới">Mới</option>
+            <option value="Đang kiểm tra">Đang kiểm tra</option>
+            <option value="Đang đợi thanh toán">Đang đợi thanh toán</option>
+            <option value="Đang xử lý">Đang xử lý</option>
+            <option value="Hoàn thành">Hoàn thành</option>
+            <option value="Hủy">Hủy</option>
+          </select>
+          
+            ) : (
+              <p className="text-white">{item.value}</p>
+            )}
           </div>
         ))}
       </div>

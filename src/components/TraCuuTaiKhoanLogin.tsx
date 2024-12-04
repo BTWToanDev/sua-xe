@@ -63,7 +63,7 @@ const TraCuuTaiKhoanLogin: React.FC = () => {
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-700">Thông Tin Khách Hàng</h2>
+        <h2 className="text-2xl font-bold text-gray-700">Thông Tin Yêu Cầu</h2>
       </div>
 
       {error && <p className="text-red-500 mt-2">{error}</p>}

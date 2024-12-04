@@ -118,7 +118,7 @@ const TaoDon = () => {
       formData.append('videos', compressedVideo);
     }
 
-    const response = await request.post("/ServiceRequests/Remote", formData, {
+    const response = await request.post("/home/service-request-remote", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
