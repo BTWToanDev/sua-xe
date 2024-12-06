@@ -1,170 +1,140 @@
-import { useEffect, useState } from "react";
-import { Input, Button, LoadingScreen, ExportExcelButton } from "../../../components/ui";
-import { toast } from "react-toastify";
-import { formatDate } from "/DoAn2/sua-xe/src/utils/format";
-import * as request from "../../../utils/request";
-import * as echarts from 'echarts';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-interface ServiceTypeCounts {
-  Direct: number;
-  Remote: number;
-  Rescue: number;
-}
-
-interface StatisticData {
-  date: string;
-  serviceTypeCounts: ServiceTypeCounts;
+// Kiểu dữ liệu trả về từ API
+interface RevenueData {
   revenue: number;
   cost: number;
   taxCost: number;
 }
 
-const ThongKeDoanhThu = () => {
-  const [view, setView] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [fromDate, setFromDate] = useState(() => formatDate(new Date()));
-  const [toDate, setToDate] = useState(() => formatDate(new Date()));
-  const [statisticData, setStatisticData] = useState<StatisticData[]>([]);
+const ThongKeDoanhThu: React.FC = () => {
+  // Trạng thái cho việc chọn ngày
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]); // Ngày kết thúc mặc định là hôm nay
 
-  const handleSetFromDate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const today = new Date();
-    const date = e.target.value;
+  // Trạng thái cho dữ liệu và lỗi
+  const [data, setData] = useState<RevenueData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-    if (new Date(date) > today) {
-      toast.warn("The start date cannot be greater than the current date");
-      setFromDate(formatDate(today));
-      return;
-    }
+  // Hàm lấy dữ liệu từ API dựa trên khoảng thời gian
+  const fetchData = async () => {
+    if (!startDate || !endDate) return;
 
-    setFromDate(date);
-  };
-
-  const handleSetToDate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const today = new Date();
-    const date = e.target.value;
-
-    if (new Date(date) < new Date(fromDate)) {
-      toast.warn("The end date cannot be smaller than the start date");
-      setToDate(formatDate(today));
-      return;
-    }
-
-    setToDate(date);
-  };
-
-  const handleView = () => {
-    console.log("Button clicked");
     setLoading(true);
-    const to = new Date(toDate);
-    const tomorrow = new Date(to);
-    tomorrow.setDate(to.getDate() + 1);
-    const endDateFormatted = tomorrow.toISOString().split("T")[0];
+    setError(null);
     
-    request
-      .get(`/Statistic/revenue`, {
-        params: {
-          startDate: fromDate,
-          endDate: endDateFormatted,
-        },
-      })
-      .then((response) => {
-        
-  
-          setStatisticData(response);
-          setView(true);
-          setTimeout(() => {
-            renderChart(response);
-
-          }, 500)
-        
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu:", error);
-        toast.error("Đã xảy ra lỗi khi lấy dữ liệu.");
-        setStatisticData([]);
-        setView(false);
-        setLoading(false);
-      });
-  };
-  
-
-  const renderChart = (data: any) => {
-    const chartElement = document.getElementById('chart');
-    if (chartElement) {
-      const myChart = echarts.init(chartElement);
-      const revenue = data.revenue;
-      const cost = data.cost;
-      const taxCost = data.taxCost;
-
-      const option = {
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: { type: 'cross', crossStyle: { color: '#999' } }
-        },
-        toolbox: {
-          feature: {
-            dataView: { show: true, readOnly: false },
-            magicType: { show: true, type: ['line', 'bar'] },
-            restore: { show: true },
-            saveAsImage: { show: true }
-          }
-        },
-        legend: {
-          data: ['Doanh thu', 'Tiền nhập hàng', 'Tiền thuế nhập hàng']
-        },
-        xAxis: [
-          {
-            type: 'type',
-            data: ['Doanh thu', 'Tiền nhập hàng', 'Tiền thuế nhập hàng'],
-            axisPointer: { type: 'shadow' }
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value',
-            name: 'Values',
-            min: 0,
-            axisLabel: { formatter: '{value}' }
-          }
-        ],
-        series: [
-          { name: 'Doanh thu', type: 'bar', data: revenue },
-          { name: 'Tiền nhập hàng', type: 'bar', data: cost },
-          { name: 'Tiền thuế nhập hàng', type: 'bar', data: taxCost }
-        ]
-      };
-
-      setTimeout(() => {
-
-        myChart.setOption(option);
-      }, 2000)
+    try {
+      const response = await axios.get(
+        `/statistic/revenue`, // Thay đổi URL API của bạn ở đây
+        {
+          params: {
+            startDate,
+            endDate,
+          },
+        }
+      );
+      
+      setData(response.data); // Giả sử cấu trúc dữ liệu trả về phù hợp
+    } catch (err) {
+      setError('Có lỗi khi lấy dữ liệu');
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Gọi hàm fetchData khi startDate hoặc endDate thay đổi
   useEffect(() => {
-    if (!fromDate) setFromDate(formatDate(new Date()));
-    if (!toDate) setToDate(formatDate(new Date()));
-  }, [fromDate, toDate]);
+    if (startDate && endDate) {
+      fetchData();
+    }
+  }, [startDate, endDate]);
+
+  // Hàm xử lý khi chọn ngày bắt đầu
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = e.target.value;
+    // Đảm bảo ngày bắt đầu không được sau ngày kết thúc
+    if (new Date(date) > new Date(endDate)) {
+      setEndDate(date);
+    }
+    setStartDate(date);
+  };
+
+  // Hàm xử lý khi chọn ngày kết thúc
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = e.target.value;
+    // Đảm bảo ngày kết thúc không được trước ngày bắt đầu
+    if (new Date(date) < new Date(startDate)) {
+      setStartDate(date);
+    }
+    setEndDate(date);
+  };
 
   return (
-    <div>
-      <div className="m-4">
-        {loading && <LoadingScreen />}
-        <h1 className="font-bold text-3xl text-gray-600 mb-4">Thống kê</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-          <div>
-            <label className="text-green-900 text-xl float-start">From</label>
-            <Input value={fromDate} onChange={handleSetFromDate} type="date" />
-          </div>
-          <div>
-            <label className="text-green-900 text-xl float-start">To</label>
-            <Input value={toDate} onChange={handleSetToDate} type="date" />
-          </div>
+    <div className="container mx-auto p-6 bg-gray-100 rounded-lg shadow-lg">
+      <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">Thống Kê Doanh Thu</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-2">Ngày Bắt Đầu:</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={handleStartDateChange}
+            max={endDate} // Ngày bắt đầu không thể sau ngày kết thúc
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
-        <Button primary onClick={handleView}>View</Button>
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-2">Ngày Kết Thúc:</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={handleEndDateChange}
+            min={startDate} // Ngày kết thúc không thể trước ngày bắt đầu
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
       </div>
-      <div id="chart" style={{ width: "100%", height: "400px" }} />
+
+      <div className="text-center mb-6">
+        <button
+          onClick={fetchData}
+          className="px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Xem Thống Kê
+        </button>
+      </div>
+
+      {/* Hiển thị trạng thái loading */}
+      {loading && <p className="text-center text-lg text-gray-600">Đang tải...</p>}
+
+      {/* Hiển thị thông báo lỗi nếu có */}
+      {error && <p className="text-center text-lg text-red-600">{error}</p>}
+
+      {/* Hiển thị dữ liệu nếu có */}
+      {data && (
+        <div className="overflow-x-auto shadow-lg rounded-lg bg-white">
+          <table className="min-w-full table-auto text-sm">
+            <thead>
+              <tr className="bg-blue-500 text-white">
+                <th className="px-6 py-3 text-left">Doanh Thu</th>
+                <th className="px-6 py-3 text-left">Chi Phí</th>
+                <th className="px-6 py-3 text-left">Thuế</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-gray-300">
+                <td className="px-6 py-4">{data.revenue}</td>
+                <td className="px-6 py-4">{data.cost}</td>
+                <td className="px-6 py-4">{data.taxCost}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

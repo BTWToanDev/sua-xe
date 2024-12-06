@@ -58,7 +58,7 @@ const ChiTietTraCuuTaiKhoan = () => {
           if (response) {
             const popupWindow = window.open(response.data.url, '_blank', 'width=800,height=600');
 
-            // Kiểm tra nếu cửa sổ không bị chặn (trình duyệt có thể chặn popup)
+           
             if (!popupWindow) {
               alert("Cửa sổ popup bị chặn, vui lòng kiểm tra trình duyệt của bạn.");
             }
@@ -96,72 +96,118 @@ const ChiTietTraCuuTaiKhoan = () => {
   const handleCancel = () => alert("Yêu cầu đã được hủy!");
 
   const handlePrintInvoice = () => {
-    //pdfMake.vfs = pdfFonts.pdfMake.vfs;
-     console.log(detailData);
-     const docDefinition = {
-       pageSize: "A4",
-       content: [
-         { text: "Hóa Đơn", style: "header" },
-         `Mã Đơn Hàng: ${detailId}`,
-        
-         `Tên Khách Hàng: ${detailData.fullName}`,
-         `Số Điện Thoại: ${detailData.mobilePhone}`,
-         `Email: ${detailData.email}`,
-         `Vấn đề: ${detailData.problems }`,
-         `Tổng Tiền: ${detailData.totalPrice.toLocaleString()} VND`,
-         {
-           table: {
-             body: [
-               [
-                 { text: "Tên Dịch Vụ", style: "tableHeader" },
-                 { text: "Số Lượng", style: "tableHeader" },
-                 { text: "Đơn Giá", style: "tableHeader" },
-                 { text: "Tổng Tiền", style: "tableHeader" },
-               ],
-               ...detailData.services.map((service:any) => [
-                 service.name,
-                 service.quantity,
-                 service.price.toLocaleString(),
-                 (service.quantity * service.price).toLocaleString(),
-               ]),
-             ],
-           },
-         },
-         {
-           table: {
-             body: [
-               [
-                 { text: "Tên linh kiện", style: "tableHeader" },
-                 { text: "Số Lượng", style: "tableHeader" },
-                 { text: "Đơn Giá", style: "tableHeader" },
-                 { text: "Tổng Tiền", style: "tableHeader" },
-                 { text: "Bảo hành đến", style: "tableHeader" },
-               ],
-               ...detailData.parts.map((part:any) => [
-                 part.name,
-                 part.quantity,
-                 part.price.toLocaleString(),
-                 (part.quantity * part.price).toLocaleString(),
-                 part.warrantyTo
-               ]),
-             ],
-           },
-         },
-         
-       ],
-       styles: {
-         header: { fontSize: 18, bold: true, margin: [0, 0, 0, 20] },
-         subHeader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
-         tableHeader: { bold: true, fontSize: 13, color: "black" },
-         content: { fontSize: 12, margin: [0, 0, 0, 5] },
-       },
-     };
-     
-     
-     pdfMake.createPdf(docDefinition).download("hoa-don-dich-vu.pdf");
-     console.log("Created");
-     
-   };
+    if (detailData.status === "Hoàn thành") {
+      console.log(detailData); 
+  
+      const docDefinition = {
+        pageSize: "A4",
+        content: [
+          { text: "Hóa Đơn", style: "header" },
+          `Mã Đơn Hàng: ${detailId}`,
+          `Tên Khách Hàng: ${detailData.fullName}`,
+          `Số Điện Thoại: ${detailData.mobilePhone}`,
+          `Email: ${detailData.email}`,
+          `Vấn đề: ${detailData.problems}`,
+          `Tổng Tiền: ${detailData.totalPrice.toLocaleString()} VND`,
+    
+          // Dịch Vụ
+          {
+            text: "Dịch Vụ", style: "subHeader",
+            margin: [0, 10, 0, 5] 
+          },
+          {
+            table: {
+              widths: ["40%", "20%", "20%", "20%"], 
+              body: [
+                [
+                  { text: "Tên Dịch Vụ", style: "tableHeader" },
+                  { text: "Số Lượng", style: "tableHeader" },
+                  { text: "Đơn Giá", style: "tableHeader" },
+                  { text: "Tổng Tiền", style: "tableHeader" },
+                ],
+                ...detailData.services.map((service: any) => [
+                  service.name,
+                  service.quantity,
+                  service.price.toLocaleString(),
+                  (service.quantity * service.price).toLocaleString(),
+                ]),
+              ],
+            },
+            layout: 'lightHorizontalLines', 
+          },
+    
+          {
+            text: "Linh Kiện", style: "subHeader",
+            margin: [0, 10, 0, 5] 
+          },
+          {
+            table: {
+              widths: ["30%", "15%", "15%", "15%", "25%"], 
+              body: [
+                [
+                  { text: "Tên linh kiện", style: "tableHeader" },
+                  { text: "Số Lượng", style: "tableHeader" },
+                  { text: "Đơn Giá", style: "tableHeader" },
+                  { text: "Tổng Tiền", style: "tableHeader" },
+                  { text: "Bảo hành đến", style: "tableHeader" },
+                ],
+                ...detailData.parts.map((part: any) => [
+                  part.name,
+                  part.quantity,
+                  part.price.toLocaleString(),
+                  (part.quantity * part.price).toLocaleString(),
+                  part.warrantyTo
+                ]),
+              ],
+            },
+            layout: 'lightHorizontalLines', 
+          },
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            alignment: 'center',
+            margin: [0, 10, 0, 20], 
+            color: "#000080", 
+          },
+          subHeader: {
+            fontSize: 14,
+            bold: true,
+            margin: [0, 10, 0, 5],
+            color: "#333333", 
+          },
+          tableHeader: {
+            bold: true,
+            fontSize: 12,
+            color: "#FFFFFF",
+            fillColor: "#4CAF50", 
+            alignment: "center",
+            padding: [8, 5], 
+          },
+          content: {
+            fontSize: 12,
+            margin: [0, 5, 0, 5],
+            alignment: "left",
+            lineHeight: 1.5, 
+          },
+          tableCell: {
+            fontSize: 12,
+            margin: [5, 3], 
+          },
+        },
+        defaultStyle: {
+          columnGap: 10, 
+        }
+      };
+    
+      pdfMake.createPdf(docDefinition).download("hoa-don-dich-vu.pdf");
+      console.log("Created");
+    } else {
+      alert("Chỉ có thể in hóa đơn khi trạng thái là 'Hoàn thành'.");
+    }
+  };
+  
 
    return (
     <div className="p-6 max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg mt-8 text-white">
@@ -267,20 +313,23 @@ const ChiTietTraCuuTaiKhoan = () => {
       <div className="flex justify-between mt-4">
       <button
           onClick={handleCancel}
-          className="px-6 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-500 transition"
+          className="py-3 px-6 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+          disabled={detailData.status === "Hoàn thành"}
         >
           Hủy Yêu Cầu
         </button>
         <button
           onClick={handlePayment}
-          className="px-6 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-500 transition"
+          className=" py-3 px-7 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+          disabled={detailData.status !== "Đang đợi thanh toán"}
         >
           Thanh Toán
         </button>
      
         <button
           onClick={handlePrintInvoice}
-          className="px-6 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-500 transition"
+          className=" py-3 px-6 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+          disabled={detailData.status !== "Hoàn thành"}
         >
           In Hóa Đơn
         </button>

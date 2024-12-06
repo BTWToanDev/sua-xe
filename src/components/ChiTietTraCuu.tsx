@@ -94,8 +94,8 @@ const ChiTietTraCuu = () => {
   const handleCancel = () => alert("Yêu cầu đã được hủy!");
 
   const handlePrintInvoice = () => {
-   // pdfMake.vfs = pdfFonts.pdfMake.vfs;
     console.log(detailData);
+    
     const docDefinition = {
       pageSize: "A4",
       content: [
@@ -105,10 +105,13 @@ const ChiTietTraCuu = () => {
         `Tên Khách Hàng: ${detailData.fullName}`,
         `Số Điện Thoại: ${detailData.mobilePhone}`,
         `Email: ${detailData.email}`,
-        `Vấn đề: ${detailData.problemseur }`,
+        `Vấn đề: ${detailData.problemseur}`,
         `Tổng Tiền: ${detailData.totalPrice.toLocaleString()} VND`,
+  
+        
         {
           table: {
+            widths: ["30%", "20%", "20%", "30%"], 
             body: [
               [
                 { text: "Tên Dịch Vụ", style: "tableHeader" },
@@ -116,7 +119,7 @@ const ChiTietTraCuu = () => {
                 { text: "Đơn Giá", style: "tableHeader" },
                 { text: "Tổng Tiền", style: "tableHeader" },
               ],
-              ...detailData.services.map((service:any) => [
+              ...detailData.services.map((service: any) => [
                 service.name,
                 service.quantity,
                 service.price.toLocaleString(),
@@ -124,9 +127,13 @@ const ChiTietTraCuu = () => {
               ]),
             ],
           },
+          margin: [0, 10, 0, 10], 
         },
+  
+       
         {
           table: {
+            widths: ["30%", "20%", "20%", "20%", "10%"], 
             body: [
               [
                 { text: "Tên linh kiện", style: "tableHeader" },
@@ -135,29 +142,38 @@ const ChiTietTraCuu = () => {
                 { text: "Tổng Tiền", style: "tableHeader" },
                 { text: "Bảo hành đến", style: "tableHeader" },
               ],
-              ...detailData.parts.map((part:any) => [
+              ...detailData.parts.map((part: any) => [
                 part.name,
                 part.quantity,
                 part.price.toLocaleString(),
                 (part.quantity * part.price).toLocaleString(),
-                part.warrantyTo
+                part.warrantyTo,
               ]),
             ],
           },
+          margin: [0, 10, 0, 20], 
         },
-        
       ],
       styles: {
         header: { fontSize: 18, bold: true, margin: [0, 0, 0, 20] },
         subHeader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
-        tableHeader: { bold: true, fontSize: 13, color: "black" },
+        tableHeader: {
+          bold: true,
+          fontSize: 13,
+          color: "black",
+          alignment: "center", 
+          fillColor: "#f0f0f0", 
+        },
         content: { fontSize: 12, margin: [0, 0, 0, 5] },
       },
+      defaultStyle: {
+        font: "Helvetica",
+      },
     };
-    
-    
+  
     pdfMake.createPdf(docDefinition).download("hoa-don-dich-vu.pdf");
   };
+  
   
 
 
@@ -263,21 +279,25 @@ const ChiTietTraCuu = () => {
 
       {/* Buttons */}
       <div className="flex justify-between mt-4">
-        <button
-          onClick={handlePayment}
-          className="px-6 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-500 transition"
-        >
-          Thanh Toán
-        </button>
-        <button
+      <button
           onClick={handleCancel}
-          className="px-6 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-500 transition"
+          className="py-3 px-6 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+          disabled={detailData.status === "Hoàn thành"}
         >
           Hủy Yêu Cầu
         </button>
         <button
+          onClick={handlePayment}
+          className=" py-3 px-7 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+          disabled={detailData.status !== "Đang đợi thanh toán"}
+        >
+          Thanh Toán
+        </button>
+     
+        <button
           onClick={handlePrintInvoice}
-          className="px-6 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-500 transition"
+          className=" py-3 px-6 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+          disabled={detailData.status !== "Hoàn thành"}
         >
           In Hóa Đơn
         </button>
