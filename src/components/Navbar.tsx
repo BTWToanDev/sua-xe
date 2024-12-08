@@ -222,7 +222,7 @@ const Navbar: React.FC = () => {
             onClick={handleScheduleClick}
             className="bg-red-500 text-white px-4 py-4 rounded-md shadow-md hover:bg-red-600 hover:shadow-xl transition duration-300"
           >
-            Đặt Lịch Ngay
+            Liên Hệ Ngay
           </button>
         </div>
 
