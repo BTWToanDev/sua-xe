@@ -201,7 +201,7 @@ const TraCuu = () => {
         </div>
       </div>
 
-      {/* Nhập tên đăng nhập để tra cứu (chỉ khi đã đăng nhập) */}
+      {/* Nhập tên đăng nhập để tra cứu (chỉ khi đã đăng nhập)
       {token && (
         <div className="mb-6">
           <label className="block text-gray-700 font-semibold mb-2">
@@ -223,7 +223,7 @@ const TraCuu = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Hiển thị lỗi nếu có */}
       {error && <p className="text-red-500 mt-2">{error}</p>}
