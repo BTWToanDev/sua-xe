@@ -244,21 +244,31 @@ const QuanLyPhuTung = () => {
 
       {showNhapHangPopup && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-xl font-bold mb-4">Nhập Hàng</h3>
-            <input type="text" placeholder="Số Lô" className="border p-2 mb-4 w-full" value={batchNumber} onChange={(e) => setBatchNumber(e.target.value)} />
-            <input type="text" placeholder="Nhà Cung Cấp" className="border p-2 mb-4 w-full" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
-            <input type="number" placeholder="Thuế" className="border p-2 mb-4 w-full" value={tax || ''} onChange={(e) => setTax(Number(e.target.value))} />
-            <input type="number" placeholder="Số Lượng" className="border p-2 mb-4 w-full" value={quantityReceived || ''} onChange={(e) => setQuantityReceived(Number(e.target.value))} />
-            <input type="number" placeholder="Giá Nhập" className="border p-2 mb-4 w-full" value={entryPrice || ''} onChange={(e) => setEntryPrice(Number(e.target.value))} />
-            <input type="date" placeholder="Ngày Sản Xuất" className="border p-2 mb-4 w-full" value={productionDate} onChange={(e) => setProductionDate(e.target.value)} />
-            <input type="date" placeholder="Ngày Hết Hạn" className="border p-2 mb-4 w-full" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
-            <div className="flex justify-end">
-              <button onClick={() => setShowNhapHangPopup(false)} className="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2">Hủy</button>
-              <button onClick={handleSaveNhapHang} className="bg-green-500 text-white px-4 py-2 rounded-lg">Lưu</button>
-            </div>
+        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <h3 className="text-xl font-bold mb-4">Nhập Hàng</h3>
+          <input type="text" placeholder="Số Lô" className="border p-2 mb-4 w-full" value={batchNumber} onChange={(e) => setBatchNumber(e.target.value)} />
+          <input type="text" placeholder="Nhà Cung Cấp" className="border p-2 mb-4 w-full" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
+          <input type="number" placeholder="Thuế" className="border p-2 mb-4 w-full" value={tax || ''} onChange={(e) => setTax(Number(e.target.value))} />
+          <input type="number" placeholder="Số Lượng" className="border p-2 mb-4 w-full" value={quantityReceived || ''} onChange={(e) => setQuantityReceived(Number(e.target.value))} />
+          <input type="number" placeholder="Giá Nhập" className="border p-2 mb-4 w-full" value={entryPrice || ''} onChange={(e) => setEntryPrice(Number(e.target.value))} />
+          
+          <div className="mb-4">
+            <label htmlFor="productionDate" className="block text-sm font-semibold mb-2">Ngày Sản Xuất</label>
+            <input type="date" id="productionDate" className="border p-2 w-full" value={productionDate} onChange={(e) => setProductionDate(e.target.value)} />
+          </div>
+          
+          <div className="mb-4">
+            <label htmlFor="expirationDate" className="block text-sm font-semibold mb-2">Ngày Hết Hạn</label>
+            <input type="date" id="expirationDate" className="border p-2 w-full" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
+          </div>
+      
+          <div className="flex justify-end">
+            <button onClick={() => setShowNhapHangPopup(false)} className="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2">Hủy</button>
+            <button onClick={handleSaveNhapHang} className="bg-green-500 text-white px-4 py-2 rounded-lg">Lưu</button>
           </div>
         </div>
+      </div>
+      
       )}
 
       {showPopup && (

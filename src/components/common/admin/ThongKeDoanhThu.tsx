@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import request from '../../../utils/request';
 
 // Kiểu dữ liệu trả về từ API
 interface RevenueData {
@@ -27,15 +28,9 @@ const ThongKeDoanhThu: React.FC = () => {
     setError(null);
     
     try {
-      const response = await axios.get(
-        `/statistic/revenue`, // Thay đổi URL API của bạn ở đây
-        {
-          params: {
-            startDate,
-            endDate,
-          },
-        }
-      );
+      
+      const response = await request.get(
+        `/statistic/revenue?startDate=${startDate}&endDate=${endDate}`);
       
       setData(response.data); // Giả sử cấu trúc dữ liệu trả về phù hợp
     } catch (err) {

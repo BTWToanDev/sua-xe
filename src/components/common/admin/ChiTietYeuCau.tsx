@@ -243,11 +243,13 @@ const ChiTietYeuCau = () => {
     }
   };
 
-  const handleRemoveItem = (type: "services" | "parts", id: number) => {
+  const handleRemoveItem = (type: "services" | "parts", itemId: number) => {
     if (type === "services") {
-      setServices(services.filter((service) => service.id !== id));
+      setServices(services.filter((service) => service.id !== itemId));
+      request.delete(`/servicerequests/${id}/services/${itemId}`)
     } else {
-      setParts(parts.filter((part) => part.id !== id));
+      setParts(parts.filter((part) => part.id !== itemId));
+      request.delete(`/servicerequests/${id}/parts/${itemId}`)
     }
   };
 
